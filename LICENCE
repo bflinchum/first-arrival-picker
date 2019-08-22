@@ -1,5 +1,5 @@
 CSIRO Open Source Software Licence Agreement (variation of the BSD / MIT License)
-Copyright (c) 20<insert>, Commonwealth Scientific and Industrial Research Organisation (CSIRO) ABN 41 687 119 230.
+Copyright (c) 2019, Commonwealth Scientific and Industrial Research Organisation (CSIRO) ABN 41 687 119 230.
 All rights reserved. CSIRO is willing to grant you a licence to this <insert name> on the following terms, except where otherwise indicated for third party material.
 Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
@@ -15,9 +15,7 @@ IN THIS CLAUSE, CSIRO INCLUDES ANY THIRD PARTY AUTHOR OR OWNER OF ANY PART OF TH
 Third Party Components
 The following third party components are distributed with the Software.  You agree to comply with the licence terms for these components as part of accessing the Software.  Other third party software may also be identified in separate files distributed with the Software.
 ___________________________________________________________________
-[insert name of software, including an internet link if relevant.
-[Insert any attribution statement from the original software, eg copyright x corporation, please contact y for further information ...]
-[This software is licensed under... eg  GNU LGPL (http://www.gnu.org/licenses/lgpl.html).]
+None.
 ___________________________________________________________________
 
-
+As a condition of this licence, you agree that where you make any adaptations, modifications, further developments, or additional features available to CSIRO or the public in connection with your access to the Software, you do so on the terms of the BSD 3-Clause Licence template, a copy available at: http://opensource.org/licenses/BSD-3-Clause.
