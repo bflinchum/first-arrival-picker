@@ -369,7 +369,7 @@ if __name__ == '__main__':
     nq = 500 #Nyquist Frequency
     order = 4    
     pickFile = 'test.txt'
-    suFile = 'shot_01068m_stacked.su'
+    suFile = 'dataFiles/shot_01068m_stacked.su'
     
 #    shotLoc = 85  #at 1278
 #    gx = 6 #geophone spacing
