@@ -49,6 +49,7 @@ def getFileInfo(dirName):
         At this stage I use two if statemetns to check for segy files. If there
         are no segy files fileInfo will be an empty list and the user will get 
         an error. Though I am not sure where error goes in a GUI?
+         - It depends, but we will be able to use try-except blocks for them
         
         It might be worth adding columns to this list if we need more info from
         the files later on
@@ -63,14 +64,13 @@ def getFileInfo(dirName):
     #Column 2: SX (float)
     fileInfo = []
     
-    for i in range(0,len(files)):
-        file = files[i]
-        tmp = files[i].split(sep='\\')
-        #print(tmp[-1])
+    for file in files:
+        filename = os.path.basename(file)
+        #print(filename)
         with segyio.open(file,strict = False) as f:
             shotLoc = f.header[0][segyio.TraceField.SourceX]
             #print(shotLoc)
-        fileInfo.append([tmp[-1],shotLoc])          
+        fileInfo.append([filename,shotLoc])
     return fileInfo
 
 #Read data from segy or su file
@@ -427,11 +427,11 @@ if __name__ == '__main__':
     #Hard coded logic to search for shot value (shoult this be exact or appox?)
     tmpShotLocs = np.zeros((len(fileInfo),1))
     for k in range(0,len(fileInfo)):
-        tmpShotLocs[k] = fileInfo[k][1]        
+        tmpShotLocs[k] = fileInfo[k][1]
     ind = np.argmin(((tmpShotLocs-shotLoc)**2)**0.5)
     #******************************************************
     
-    [x,t,data,gx,shotLoc] = getData('segy',dirName+'\\'+fileInfo[ind][0])    
+    [x,t,data,gx,shotLoc] = getData('segy', os.path.join(dirName, fileInfo[ind][0]))
     if applyBPFilt:
         data = bpData(data,lf,hf,nq,order)
     data = normalizeTraces(data)
