@@ -12,6 +12,7 @@ import time
 import os
 from scipy import signal
 import segyio
+import glob as glb
 
 #Function that normalizes each trace to maximum amplitude for plotting
 def normalizeTraces(data):
@@ -24,8 +25,54 @@ def normalizeTraces(data):
     for i in range(0,data.shape[1]):
         nData[:,i] = data[:,i]/np.max(np.abs(data[:,i]))
     return nData  
-        
+
+def getFileInfo(dirName):
+    """
+    This function will read all of the *.segy or & *.sgy files in a given 
+    directory. It returns a list with the file name and the shot location.
+    This information will be passed to the GUI to display the file names. At
+    a latter time it might be worth extracting other things from the headers
+    and storing them in this list.
     
+    DEPENDENCIES:
+        GLOB - this is used to get the file names in the directory
+        segyio - this is used to read the segy files and extract header info
+    INPUTS:
+        dirName (str) = this is a string to the directory that contains all of 
+        the segy files from the survey.
+    OUTPUTS:
+        fileInfo is a list that is total Files by 2.
+        Column 1 (str) = file name
+        Column 2 (float) = shot location (units assumed to be m)
+        
+    NOTES:
+        At this stage I use two if statemetns to check for segy files. If there
+        are no segy files fileInfo will be an empty list and the user will get 
+        an error. Though I am not sure where error goes in a GUI?
+         - It depends, but we will be able to use try-except blocks for them
+        
+        It might be worth adding columns to this list if we need more info from
+        the files later on
+    """
+    files = glb.glob(dirName + '\*.sgy')
+    if files == []:
+        files = glb.glob(dirName + '\*.segy')
+        
+    if files == []:
+        print('No files with *.sgy or *.segy exist in this directory')
+    #Column 1: File Name (str)
+    #Column 2: SX (float)
+    fileInfo = []
+    
+    for file in files:
+        filename = os.path.basename(file)
+        #print(filename)
+        with segyio.open(file,strict = False) as f:
+            shotLoc = f.header[0][segyio.TraceField.SourceX]
+            #print(shotLoc)
+        fileInfo.append([filename,shotLoc])
+    return fileInfo
+
 #Read data from segy or su file
 #written to read a single file right now. Could modify to extract shot location
 #From a compiled file (or give file list??) Options but segyio made it pretty 
@@ -369,11 +416,22 @@ if __name__ == '__main__':
     nq = 500 #Nyquist Frequency
     order = 4    
     pickFile = 'test.txt'
-    suFile = 'shot_01068m_stacked.su'
+    suFile = 'dataFiles/shot_01068m_stacked.su'
     
-#    shotLoc = 85  #at 1278
-#    gx = 6 #geophone spacing
-    [x,t,data,gx,shotLoc] = getData('su',suFile)    
+    #* HARD CODED FOR NOW. We will need to click and open a browser to select
+    #This Path
+    dirName = r"C:\Users\Fli034\Documents\firstArrivalPicker\eRFP_Develop\first-arrival-picker\dataFiles\survey1"
+    shotLoc = 918
+    fileInfo = getFileInfo(dirName)
+    
+    #Hard coded logic to search for shot value (shoult this be exact or appox?)
+    tmpShotLocs = np.zeros((len(fileInfo),1))
+    for k in range(0,len(fileInfo)):
+        tmpShotLocs[k] = fileInfo[k][1]
+    ind = np.argmin(((tmpShotLocs-shotLoc)**2)**0.5)
+    #******************************************************
+    
+    [x,t,data,gx,shotLoc] = getData('segy', os.path.join(dirName, fileInfo[ind][0]))
     if applyBPFilt:
         data = bpData(data,lf,hf,nq,order)
     data = normalizeTraces(data)
