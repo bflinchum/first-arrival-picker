@@ -54,9 +54,9 @@ def getFileInfo(dirName):
         It might be worth adding columns to this list if we need more info from
         the files later on
     """
-    files = glb.glob(dirName + '\*.sgy')
+    files = glb.glob(os.path.join(dirName, '*.sgy'))
     if files == []:
-        files = glb.glob(dirName + '\*.segy')
+        files = glb.glob(os.path.join(dirName, '*.segy'))
         
     if files == []:
         print('No files with *.sgy or *.segy exist in this directory')
