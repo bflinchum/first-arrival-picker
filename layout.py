@@ -21,7 +21,7 @@ class FigurePanel(wx.Panel):
         self.canvas = FigureCanvas(self, -1, self.figure)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.EXPAND)
+        self.sizer.Add(self.canvas, wx.SizerFlags(1).Left().Top().Shaped())
         self.SetSizer(self.sizer)
         self.Fit()
 
@@ -32,7 +32,7 @@ class FigurePanel(wx.Panel):
         self.toolbar.Realize()
         # By adding toolbar in sizer, we are able to put it at the bottom
         # of the frame - so appearance is closer to GTK version.
-        self.sizer.Add(self.toolbar, 0, wx.LEFT | wx.EXPAND)
+        self.sizer.Add(self.toolbar, wx.SizerFlags(0).Left().Expand())
         # update the axes menu on the toolbar
         self.toolbar.update()
 
@@ -154,9 +154,6 @@ class MainFrame(wx.Frame):
         self.SetMenuBar(menuBar)
         self.Bind(wx.EVT_MENU, self.quit, exitItem)
 
-        self.SetTitle("wxPython Frame")
-        # self.Show(True)
-
     def quit(self, event):
         self.Close()
 
@@ -167,7 +164,7 @@ class App(wx.App):
         super().__init__()
         MainFrame(
             None,
-            title='Seismic First Arrival Picker Layout v1',
+            title="Seismic First Arrival Picker Layout v1",
             size=(1200, 600)
         )
 
