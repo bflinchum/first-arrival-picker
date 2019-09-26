@@ -406,9 +406,8 @@ class pickingModule:
         self.fig2.canvas.mpl_connect('button_press_event',whenClicked)
         self.fig2.canvas.mpl_connect('button_release_event',whenReleased)
 
-if __name__ == '__main__':
 
-    
+def picker():
     applyBPFilt = True
     #applyBPFilt = False
     lf = 10
@@ -436,8 +435,11 @@ if __name__ == '__main__':
         data = bpData(data,lf,hf,nq,order)
     data = normalizeTraces(data)
         
-    a = pickingModule(x,t,data,shotLoc,pickFile,gx)
-    
+    return pickingModule(x,t,data,shotLoc,pickFile,gx)
+
+
+if __name__ == '__main__':
+    picker()
     plt.show()
 
     

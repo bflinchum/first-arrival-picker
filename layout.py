@@ -7,18 +7,14 @@ import numpy as np
 import wx
 import wx.lib.mixins.inspection as WIT
 
+from picker_v1 import picker
+
 ###### Example for displaying a MatPlotLib Figure! ######
 class FigurePanel(wx.Panel):
-    def __init__(self, parent):
+    def __init__(self, parent, figure):
         super().__init__(parent)
 
-        self.figure = plt.figure()
-        self.axes = self.figure.add_subplot(111)
-        t = np.arange(0.0, 3.0, 0.01)
-        s = np.sin(2 * np.pi * t)
-
-        self.axes.plot(t, s)
-        self.canvas = FigureCanvas(self, -1, self.figure)
+        self.canvas = FigureCanvas(self, -1, figure)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.canvas, wx.SizerFlags(1).Left().Top().Shaped())
@@ -32,7 +28,7 @@ class FigurePanel(wx.Panel):
         self.toolbar.Realize()
         # By adding toolbar in sizer, we are able to put it at the bottom
         # of the frame - so appearance is closer to GTK version.
-        self.sizer.Add(self.toolbar, wx.SizerFlags(0).Left().Expand())
+        self.sizer.Add(self.toolbar, wx.SizerFlags(0).Left())
         # update the axes menu on the toolbar
         self.toolbar.update()
 
@@ -75,12 +71,12 @@ class LeftSection(wx.BoxSizer):
         self.Add(bottomsizer, wx.SizerFlags(1).Expand())
 
 class MiddleSection(wx.BoxSizer):
-    def __init__(self, panel):
+    def __init__(self, panel, figure):
         super().__init__(wx.VERTICAL)
 
         # Top
         topsizer = wx.BoxSizer(wx.VERTICAL)
-        topsizer.Add(FigurePanel(panel), wx.SizerFlags(1).Shaped().Border(wx.BOTTOM))
+        topsizer.Add(FigurePanel(panel, figure), wx.SizerFlags(1).Shaped().Border(wx.BOTTOM))
 
         # Bottom
         bottomsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -106,30 +102,33 @@ class MiddleSection(wx.BoxSizer):
         self.Add(bottomsizer, wx.SizerFlags(1).Centre().Expand())
 
 class RightSection(wx.BoxSizer):
-    def __init__(self, panel):
+    def __init__(self, panel, figure):
         super().__init__(wx.VERTICAL)
-        self.Add(FigurePanel(panel), wx.SizerFlags(1).Shaped())
+        self.Add(FigurePanel(panel, figure), wx.SizerFlags(1).Shaped())
 
 class MainFrame(wx.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.menubar()
-        self.InitUI()
+
+        self.picker = picker()
+        self.gui_layout()
+
         self.Centre()
         self.Show()
 
-    def InitUI(self):
+    def gui_layout(self):
         panel = wx.Panel(self)
 
         ### LEFT SECTION ###
         leftsection = LeftSection(panel)
 
         ### MIDDLE SECTION ###
-        middlesection = MiddleSection(panel)
+        middlesection = MiddleSection(panel, self.picker.fig1)
         
         ### RIGHT SECTION ###
-        rightsection = RightSection(panel)
+        rightsection = RightSection(panel, self.picker.fig2)
 
         ### Add left and right sections to the main sizer
         mainsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -138,7 +137,9 @@ class MainFrame(wx.Frame):
         mainsizer.Add(middlesection, wx.SizerFlags(1).Centre().Expand().Border(wx.ALL))
         mainsizer.Add(rightsection, wx.SizerFlags(1).Centre().Expand().Border(wx.ALL)) ### CONFIRMED: Can stack panels on panels
 
-        panel.SetSizer(mainsizer)
+        panel.SetSizerAndFit(mainsizer)
+        self.SetSizeHints(self.Size)
+
 
     def menubar(self):
         menuBar = wx.MenuBar()
@@ -165,7 +166,7 @@ class App(wx.App):
         MainFrame(
             None,
             title="Seismic First Arrival Picker Layout v1",
-            size=(1200, 600)
+            size=(1400, 825)
         )
 
 if __name__ == "__main__":
