@@ -420,7 +420,7 @@ if __name__ == '__main__':
     
     #* HARD CODED FOR NOW. We will need to click and open a browser to select
     #This Path
-    dirName = r"C:\Users\Fli034\Documents\firstArrivalPicker\eRFP_Develop\first-arrival-picker\dataFiles\survey1"
+    dirName = "./dataFiles/survey1"
     shotLoc = 918
     fileInfo = getFileInfo(dirName)
     
@@ -438,6 +438,8 @@ if __name__ == '__main__':
         
     a = pickingModule(x,t,data,shotLoc,pickFile,gx)
     
+    plt.show()
+
     
 #***************THESE ARE PLOTS THAT I WANT to Incorporate into the GUI*******
 #    #They are built from the pick data read from a file during the GUI

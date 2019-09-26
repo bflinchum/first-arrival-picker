@@ -1,2 +1,4 @@
 .vscode/
 Pipfile*
+__pycache__/
+test.txt
