@@ -142,63 +142,32 @@ def bpData(data,lf,hf,nq,order):
         fData[:,i] = signal.filtfilt(b,a,data[:,i])
         
     return fData
-
 #END OF FUNCTIONS IN __main__**************************************************
 
 #Main Window class must intialize first because it will check if pick file exists
 class mainPickingWindow:
-
-    def __init__(self,x,t,data,shotLoc,pickFileName):
-        
+    def __init__(self,x,t,data,shotLoc,pickFileName):        
         #LOCAL FUNCTIONS (NOT METHODS)****************************************
-        def setUpFigLayout(initAmpSliderVal,initTimeSliderVal):
-            """
-            This will set up the main window layout.
-            INPUTS:
-                initAmpSliderVal = the initial value for the amplitude slider
-                initTimeSliderVal = the intial value for the time slider
-                
-            OUTPUTS:
-                fig1 = the main figure window (matplotLib Figure object)
-                mainDataAxis = Main data axes (matplotLib axis object)
-                ampSliderAxis = Amplitude slider for main data (matplotLib axis object)
-                timeSliderAxis = Time slider for main data (matplotLib axis object)
-                ampSlider = The amplitude "Slider" Object
-                timeSlider = the time "Slider" object
-            """
-            fig1 = plt.figure(1,dpi=100,figsize=[8,7]) #Sizes hard-coded...
-            gs = gridspec.GridSpec(5,1, height_ratios=[5,0.5,0.25,0.25,0.25])
-            mainDataAxis = fig1.add_subplot(gs[0]) #Main data axes (matplotLib axis object)
-            ampSliderAxis = fig1.add_subplot(gs[2]) #Amplitude slider for main data (matplotLib axis object)
-            timeSliderAxis = fig1.add_subplot(gs[3]) #Time slider for main data (matplotLib axis object)
-            
-            ampSlider = Slider(ampSliderAxis, 'Amplitude', 0, 1, valinit=initAmpSliderVal, valstep=0.01)
-            timeSlider = Slider(timeSliderAxis, 'Max Time',0,1,valinit=initTimeSliderVal,valstep=0.05)
-            
-            mainDataAxis.set_ylim([0,initAmpSliderVal])
-            mainDataAxis.set_ylim([0,initTimeSliderVal])
-            mainDataAxis.invert_yaxis()
-            mainDataAxis.set_xlabel('Channel')
-            mainDataAxis.set_ylabel('Time (s)')
-            return fig1,mainDataAxis,ampSliderAxis,timeSliderAxis,ampSlider,timeSlider
+        #This has to be local because it can only take a single float as input
+        #if I make it a method it requires "self" as an input--which means two
+        #inputs and I get a bunch of errors.
         
         def updateFigure(updateFloat):
             #According to documentation "The function must accept a single float as its arguments."
             cSliderVal = self.ampSlider.val
             cTimeVal = self.timeSlider.val
-            mainDataAxis.clear()
-            mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
-            if not (self.shotLocs == []):
-               indShots = np.where(self.shotLocs==shotLoc)
-               mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
-            mainDataAxis.set_ylim([0,cTimeVal])
-            mainDataAxis.invert_yaxis()
-            mainDataAxis.set_xlabel('Distance (m)')
-            mainDataAxis.set_ylabel('Time (s)')
+            self.mainDataAxis.clear()
+            self.mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
+#            if not (self.shotLocs == []):
+#               indShots = np.where(self.shotLocs==shotLoc)
+#               self.mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
+            self.mainDataAxis.set_ylim([0,cTimeVal])
+            self.mainDataAxis.invert_yaxis()
+            self.mainDataAxis.set_xlabel('Distance (m)')
+            self.mainDataAxis.set_ylabel('Time (s)')
             plt.draw()
-        
-        #END LCOAL FUNCTIONS***************************************************        
-        
+        #END LCOAL FUNCTIONS*************************************************** 
+           
         """
         Variables that need to be accesible, I am calling these properties.
         These will need to have the term self in front of the name
@@ -233,13 +202,13 @@ class mainPickingWindow:
         #END LOCAL VARIABLES***************************************************
 
         #Set up the figure
-        fig1,mainDataAxis,ampSliderAxis,timeSliderAxis,self.ampSlider,self.timeSlider = setUpFigLayout(initAmp4Slider,initTime4Slider)
+        self.figureObject,self.mainDataAxis,ampSliderAxis,timeSliderAxis,self.ampSlider,self.timeSlider = self.setUpFigLayout(initAmp4Slider,initTime4Slider)
         
         #Initialization of first plot
-        mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-initAmp4Slider,vmax=initAmp4Slider ,cmap='gray')
-        if not (self.shotLocs == []):
-           indShots = np.where(self.shotLocs==shotLoc)
-           mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
+        self.mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-initAmp4Slider,vmax=initAmp4Slider ,cmap='gray')
+#        if not (self.shotLocs == []):
+#           indShots = np.where(self.shotLocs==shotLoc)
+#           self.mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
         
         #ACTIVATE SLIDERS
         #I had to make these properties so that they would self update....
@@ -247,13 +216,145 @@ class mainPickingWindow:
         self.ampSlider.on_changed(updateFigure)
         self.timeSlider.on_changed(updateFigure)
         
-        plt.show() #This has to be the last command.
+        #plt.show() #This has to be the last command.
+            
+            
+    def setUpFigLayout(self,initAmpSliderVal,initTimeSliderVal):
+        """
+        This will set up the main window layout.
+        INPUTS:
+            initAmpSliderVal = the initial value for the amplitude slider
+            initTimeSliderVal = the intial value for the time slider
+            
+        OUTPUTS:
+            fig1 = the main figure window (matplotLib Figure object)
+            mainDataAxis = Main data axes (matplotLib axis object)
+            ampSliderAxis = Amplitude slider for main data (matplotLib axis object)
+            timeSliderAxis = Time slider for main data (matplotLib axis object)
+            ampSlider = The amplitude "Slider" Object
+            timeSlider = the time "Slider" object
+        """
+        fig1 = plt.figure(1,dpi=100,figsize=[8,7]) #Sizes hard-coded...
+        gs = gridspec.GridSpec(5,1, height_ratios=[5,0.5,0.25,0.25,0.25])
+        mainDataAxis = fig1.add_subplot(gs[0]) #Main data axes (matplotLib axis object)
+        ampSliderAxis = fig1.add_subplot(gs[2]) #Amplitude slider for main data (matplotLib axis object)
+        timeSliderAxis = fig1.add_subplot(gs[3]) #Time slider for main data (matplotLib axis object)
+        
+        ampSlider = Slider(ampSliderAxis, 'Amplitude', 0, 1, valinit=initAmpSliderVal, valstep=0.01)
+        timeSlider = Slider(timeSliderAxis, 'Max Time',0,1,valinit=initTimeSliderVal,valstep=0.05)
+        
+        mainDataAxis.set_ylim([0,initAmpSliderVal])
+        mainDataAxis.set_ylim([0,initTimeSliderVal])
+        mainDataAxis.invert_yaxis()
+        mainDataAxis.set_xlabel('Channel')
+        mainDataAxis.set_ylabel('Time (s)')
+        return fig1,mainDataAxis,ampSliderAxis,timeSliderAxis,ampSlider,timeSlider
+    
 
+         
+class tracePickingWindow:
+    def __init__(self,x,t,data,shotLoc,traceNum,pickFileName):   
+        #LOCAL FUNCTIONS (NOT METHODS)****************************************
+        #I know this is unconvential but the matplotlib sliders require this.
+        def updateFigure(updateFloat):
+            #According to documentation "The function must accept a single float as its arguments."
+            cSliderVal = self.ampSlider.val
+            cTimeVal = self.timeSlider.val
+            cWindowSize = self.windowSizeSlider.val
+            
+            self.mainDataAxis.clear()
+            self.mainDataAxis.plot(traceData,t,'k')
+            self.mainDataAxis.fill_betweenx(t,0,traceData,where=traceData<0,color='k',interpolate=True)
+            #mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
+#            if not (self.shotLocs == []):
+#               indShots = np.where(self.shotLocs==shotLoc)
+#               mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
+            self.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
+            self.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
+            self.mainDataAxis.invert_yaxis()
+            self.mainDataAxis.set_xlabel('Distance (m)')
+            self.mainDataAxis.set_ylabel('Time (s)')
+            plt.draw()
+        #END LCOAL FUNCTIONS*************************************************** 
         
+        """
+        Variables that need to be accesible, I am calling these properties.
+        These will need to have the term self in front of the name
+        shotLocs = list of shot locations
+        xPicks = list of x-picks at each shot location
+        tPicks = list of t-picks at each shot location        
         
-##Trace Window class
-#class tracePickingWindow:
-#    def __init__(self,x,t,data,shotLoc,pickFileName)
+        Functions that need to be accesible, these are methods:
+        """
+        # OBJECT PROPERTIES****************************************************
+        #Initialze or read pick data. These are accesible otuside the class.
+        if os.path.exists(pickFileName):
+            tempData = np.loadtxt(pickFileName)
+            self.shotLocs = tempData[:,0]
+            self.xPicks = tempData[:,1]
+            self.tPicks = tempData[:,2]
+        else:
+            self.shotLocs = []
+            self.xPicks = []
+            self.tPicks = []
+        #END OBJECT PROPERTIES*************************************************
+        
+        #LOCAL VARIABLES*******************************************************
+        #Calculate dt and gx (gx = geophone spacing in m)
+        traceData = data[:,traceNum]
+        #Intial values for sliders
+        initAmp4Slider = 0.5
+        initTime4Slider = 0
+        initWindowSize4Slider = 0.1
+        #END LOCAL VARIABLES***************************************************
+        
+        self.figureObject,self.mainDataAxis,ampSliderAxis,timeSliderAxis,windowSizeSliderAxis,self.ampSlider,self.timeSlider,self.windowSizeSlider = self.setUpFigLayout(initAmp4Slider,initTime4Slider,initWindowSize4Slider)
+        
+        self.mainDataAxis.plot(traceData,t,'k')
+        self.mainDataAxis.fill_betweenx(t,0,traceData,where=traceData<0,color='k',interpolate=True)
+        
+        self.ampSlider.on_changed(updateFigure)
+        self.timeSlider.on_changed(updateFigure)
+        self.windowSizeSlider.on_changed(updateFigure)
+        
+
+    def setUpFigLayout(self,initAmpSliderVal,initTimeSliderVal,initWinSizeVal):
+        """
+        This will set up the main window layout.
+        INPUTS:
+            initAmpSliderVal = the initial value for the amplitude slider
+            initTimeSliderVal = the intial value for the time slider
+            initWinSizeVal = the initial value for the window size (time)
+            
+        OUTPUTS:
+            fig1 = the main figure window (matplotLib Figure object)
+            mainDataAxis = Main data axes (matplotLib axis object)
+            ampSliderAxis = Amplitude slider for main data (matplotLib axis object)
+            timeSliderAxis = Time slider for main data (matplotLib axis object)
+            windowSizeSliderAxis = Time slider for main data (matplotLib axis object)
+            ampSlider = The amplitude "Slider" Object
+            timeSlider = the time "Slider" object
+            windowSizeSlider = the window size "Slider" object
+        """
+        fig1 = plt.figure(2,dpi=100,figsize=[4,7]) #Sizes hard-coded...
+        gs = gridspec.GridSpec(5,1, height_ratios=[5,0.5,0.25,0.25,0.25])
+        mainDataAxis = fig1.add_subplot(gs[0]) #Main data axes (matplotLib axis object)
+        ampSliderAxis = fig1.add_subplot(gs[2]) #Amplitude slider for main data (matplotLib axis object)
+        timeSliderAxis = fig1.add_subplot(gs[3]) #Time slider for main data (matplotLib axis object)
+        windowSizeSliderAxis = fig1.add_subplot(gs[4]) #Time slider for main data (matplotLib axis object)
+        
+        ampSlider = Slider(ampSliderAxis, 'Amplitude', 0, 1, valinit=initAmpSliderVal, valstep=0.001)
+        timeSlider = Slider(timeSliderAxis, 'Initial Time',-0.1,0.3,valinit=initTimeSliderVal,valstep=0.001)
+        windowSizeSlider = Slider(windowSizeSliderAxis, 'Window Size',0,0.5,valinit=initWinSizeVal,valstep=0.001)
+        
+        mainDataAxis.set_ylim([initTimeSliderVal,initTimeSliderVal+initWinSizeVal])
+        mainDataAxis.set_xlim([-initAmpSliderVal,initAmpSliderVal])
+        mainDataAxis.invert_yaxis()
+        mainDataAxis.set_xlabel('Normalized Amplitude')
+        mainDataAxis.set_ylabel('Time (s)')
+        return fig1,mainDataAxis,ampSliderAxis,timeSliderAxis,windowSizeSliderAxis,ampSlider,timeSlider,windowSizeSlider
+    
+
 
 if __name__ == '__main__':
 
@@ -264,6 +365,9 @@ if __name__ == '__main__':
     nq = 500 #Nyquist Frequency
     order = 4    
     pickFile = 'test.txt'
+    picks = np.loadtxt(pickFile)
+    #Add function to check for duplicates
+    
     suFile = 'dataFiles/shot_01068m_stacked.su'
     
     #* HARD CODED FOR NOW. We will need to click and open a browser to select
@@ -285,4 +389,33 @@ if __name__ == '__main__':
     data = normalizeTraces(data)
     
     a = mainPickingWindow(x,t,data,shotLoc,pickFile)
-
+    b = tracePickingWindow(x,t,data,shotLoc,10,pickFile)
+#    
+#    def whenClicked(event):
+#        b.mainDataAxis.time_onclick = time.time()
+#    def whenReleased(event):
+#        MAX_CLICK_LENGTH = 0.2
+#        if event.button == 1 and (time.time() - b.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
+#            tPick = event.ydata
+#            print(tPick)
+#    b.figureObject.canvas.mpl_connect('button_press_event',whenClicked)
+#    b.figureObject.canvas.mpl_connect('button_release_event',whenReleased)
+#    
+#    def switchTraces(event):
+#        if event.key=='right':
+#            print("plus one")
+#        elif event.key=='left':
+#            print("minus one")
+#    def whenClicked2(event):
+#        a.mainDataAxis.time_onclick = time.time()
+#     
+#    def getTrace(event):
+#        MAX_CLICK_LENGTH = 0.2
+#        if event.button == 1 and (time.time() - a.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
+#            xPick = event.xdata
+#            print(xPick)
+#    a.figureObject.canvas.mpl_connect('key_press_event',switchTraces)
+#    a.figureObject.canvas.mpl_connect('button_press_event',whenClicked2)
+#    a.figureObject.canvas.mpl_connect('button_release_event',getTrace)
+    
+    plt.show()
