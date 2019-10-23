@@ -406,15 +406,9 @@ class pickingModule:
         self.fig2.canvas.mpl_connect('key_press_event',switchTraces)
         self.fig2.canvas.mpl_connect('button_press_event',whenClicked)
         self.fig2.canvas.mpl_connect('button_release_event',whenReleased)
-<<<<<<< HEAD
 
 
 def picker():
-=======
-        
-if __name__ == '__main__':
-    
->>>>>>> master
     applyBPFilt = True
     #applyBPFilt = False
     lf = 10
@@ -442,16 +436,12 @@ if __name__ == '__main__':
         data = bpData(data,lf,hf,nq,order)
     data = normalizeTraces(data)
         
-<<<<<<< HEAD
     return pickingModule(x,t,data,shotLoc,pickFile,gx)
 
 
 if __name__ == '__main__':
     picker()
     plt.show()
-=======
-    a = pickingModule(x,t,data,shotLoc,pickFile,gx)
->>>>>>> master
 
     
 #***************THESE ARE PLOTS THAT I WANT to Incorporate into the GUI*******
