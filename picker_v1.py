@@ -54,9 +54,9 @@ def getFileInfo(dirName):
         It might be worth adding columns to this list if we need more info from
         the files later on
     """
-    files = glb.glob(dirName + '\*.sgy')
+    files = glb.glob(os.path.join(dirName, '*.sgy'))
     if files == []:
-        files = glb.glob(dirName + '\*.segy')
+        files = glb.glob(os.path.join(dirName, '*.segy'))
         
     if files == []:
         print('No files with *.sgy or *.segy exist in this directory')
@@ -137,6 +137,7 @@ def bpData(data,lf,hf,nq,order):
 class pickingModule:
     def __init__(self, x, t, data, shotLoc, pickFileName, gx):
         self.dt = np.round(np.diff(t)[0],decimals=4)
+        
         #DEFINE VARIABLES
         if os.path.exists(pickFileName):
             tempData = np.loadtxt(pickFileName)
@@ -158,6 +159,7 @@ class pickingModule:
         #SET UP FIGURE SPACES
         self.fig1 = plt.figure(1,dpi=100,figsize=[8,7])
         self.fig2 = plt.figure(2,dpi=100,figsize=[4,7])
+
         gs = gridspec.GridSpec(5,1, height_ratios=[5,0.5,0.25,0.25,0.25])
 
         self.ax1 = self.fig1.add_subplot(gs[0]) #Main data axes
@@ -282,7 +284,6 @@ class pickingModule:
         #Activate the sliders    
         self.mainAmpSlider.on_changed(updateAmp_main)
         self.mainTimeSlider.on_changed(updateAmp_main)
-
         #OPEN/CREATE EVENT HANDLERS FOR PICKIGN AND DELETING
         #define funciton to move the traces
         def switchTraces(event):            
@@ -329,8 +330,8 @@ class pickingModule:
                 self.ax4.set_ylabel('Time (s)')
                 self.ax4.set_title(str(x[self.traceNum]) + ' m')
                 self.fig2.canvas.draw()
-        
 
+        
             
         def whenReleased(event):
             MAX_CLICK_LENGTH = 0.2
@@ -405,9 +406,15 @@ class pickingModule:
         self.fig2.canvas.mpl_connect('key_press_event',switchTraces)
         self.fig2.canvas.mpl_connect('button_press_event',whenClicked)
         self.fig2.canvas.mpl_connect('button_release_event',whenReleased)
+<<<<<<< HEAD
 
 
 def picker():
+=======
+        
+if __name__ == '__main__':
+    
+>>>>>>> master
     applyBPFilt = True
     #applyBPFilt = False
     lf = 10
@@ -435,12 +442,16 @@ def picker():
         data = bpData(data,lf,hf,nq,order)
     data = normalizeTraces(data)
         
+<<<<<<< HEAD
     return pickingModule(x,t,data,shotLoc,pickFile,gx)
 
 
 if __name__ == '__main__':
     picker()
     plt.show()
+=======
+    a = pickingModule(x,t,data,shotLoc,pickFile,gx)
+>>>>>>> master
 
     
 #***************THESE ARE PLOTS THAT I WANT to Incorporate into the GUI*******
