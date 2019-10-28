@@ -343,6 +343,9 @@ class doPicks:
         #Create both windows with initalized values
         tracePickWindow = tracePickingWindow(self.x,self.t,self.data,shotLoc,initTraceNumb)
         mainWindowObject = mainPickingWindow(self.x,self.t,self.data,shotLoc)
+
+        self.tracePickWindow = tracePickWindow
+        self.mainWindowObject = mainWindowObject
         
         #Create an attribute to keep track of current trace (this will need travel throughout the class)
         self.cTrace = initTraceNumb
@@ -579,7 +582,7 @@ class picker():
             data = bpData(data,lf,hf,nq,order)
         data = normalizeTraces(data)
 
-        c = doPicks(x,t,data,shotLoc,10,pickFile)
+        self.c = doPicks(x,t,data,shotLoc,10,pickFile)
 
 if __name__ == '__main__':
     picker()

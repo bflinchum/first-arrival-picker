@@ -125,10 +125,10 @@ class MainFrame(wx.Frame):
         leftsection = LeftSection(panel)
 
         ### MIDDLE SECTION ###
-        middlesection = MiddleSection(panel, self.picker.a.figureObject)
+        middlesection = MiddleSection(panel, self.picker.c.mainWindowObject.figureObject)
         
         ### RIGHT SECTION ###
-        rightsection = RightSection(panel, self.picker.b.figureObject)
+        rightsection = RightSection(panel, self.picker.c.tracePickWindow.figureObject)
 
         ### Add left and right sections to the main sizer
         mainsizer = wx.BoxSizer(wx.HORIZONTAL)
