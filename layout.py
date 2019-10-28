@@ -7,7 +7,7 @@ import numpy as np
 import wx
 import wx.lib.mixins.inspection as WIT
 
-from picker_v1 import picker
+from picker_v2 import picker
 
 ###### Example for displaying a MatPlotLib Figure! ######
 class FigurePanel(wx.Panel):
@@ -125,17 +125,17 @@ class MainFrame(wx.Frame):
         leftsection = LeftSection(panel)
 
         ### MIDDLE SECTION ###
-        middlesection = MiddleSection(panel, self.picker.fig1)
+        middlesection = MiddleSection(panel, self.picker.a.figureObject)
         
         ### RIGHT SECTION ###
-        rightsection = RightSection(panel, self.picker.fig2)
+        rightsection = RightSection(panel, self.picker.b.figureObject)
 
         ### Add left and right sections to the main sizer
         mainsizer = wx.BoxSizer(wx.HORIZONTAL)
         
         mainsizer.Add(leftsection, wx.SizerFlags(1).Centre().Expand().Border(wx.ALL))
         mainsizer.Add(middlesection, wx.SizerFlags(1).Centre().Expand().Border(wx.ALL))
-        mainsizer.Add(rightsection, wx.SizerFlags(1).Centre().Expand().Border(wx.ALL)) ### CONFIRMED: Can stack panels on panels
+        mainsizer.Add(rightsection, wx.SizerFlags(1).Centre().Expand().Border(wx.ALL))
 
         panel.SetSizerAndFit(mainsizer)
         self.SetSizeHints(self.Size)

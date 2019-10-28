@@ -253,29 +253,32 @@ class mainPickingWindow:
 
          
 class tracePickingWindow:
-    def __init__(self,x,t,data,shotLoc,traceNum,pickFileName):   
-        #LOCAL FUNCTIONS (NOT METHODS)****************************************
-        #I know this is unconvential but the matplotlib sliders require this.
-        def updateFigure(updateFloat):
-            #According to documentation "The function must accept a single float as its arguments."
-            cSliderVal = self.ampSlider.val
-            cTimeVal = self.timeSlider.val
-            cWindowSize = self.windowSizeSlider.val
-            
-            self.mainDataAxis.clear()
-            self.mainDataAxis.plot(traceData,t,'k')
-            self.mainDataAxis.fill_betweenx(t,0,traceData,where=traceData<0,color='k',interpolate=True)
-            #mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
+
+    #LOCAL FUNCTIONS (NOT METHODS)****************************************
+    #I know this is unconvential but the matplotlib sliders require this.
+    def updateFigure(self, updateFloat):
+        #According to documentation "The function must accept a single float as its arguments."
+        cSliderVal = self.ampSlider.val
+        cTimeVal = self.timeSlider.val
+        cWindowSize = self.windowSizeSlider.val
+        
+        self.mainDataAxis.clear()
+        self.mainDataAxis.plot(self.traceData,self.t,'k')
+        self.mainDataAxis.fill_betweenx(self.t,0,self.traceData,where=self.traceData<0,color='k',interpolate=True)
+        #mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
 #            if not (self.shotLocs == []):
 #               indShots = np.where(self.shotLocs==shotLoc)
 #               mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
-            self.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
-            self.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
-            self.mainDataAxis.invert_yaxis()
-            self.mainDataAxis.set_xlabel('Distance (m)')
-            self.mainDataAxis.set_ylabel('Time (s)')
-            plt.draw()
-        #END LCOAL FUNCTIONS*************************************************** 
+        self.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
+        self.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
+        self.mainDataAxis.invert_yaxis()
+        self.mainDataAxis.set_xlabel('Distance (m)')
+        self.mainDataAxis.set_ylabel('Time (s)')
+        plt.draw()
+    #END LCOAL FUNCTIONS*************************************************** 
+    
+    def __init__(self,x,t,data,shotLoc,traceNum,pickFileName):   
+        
         
         """
         Variables that need to be accesible, I am calling these properties.
@@ -301,7 +304,8 @@ class tracePickingWindow:
         
         #LOCAL VARIABLES*******************************************************
         #Calculate dt and gx (gx = geophone spacing in m)
-        traceData = data[:,traceNum]
+        self.traceData = data[:,traceNum]
+        self.t = t
         #Intial values for sliders
         initAmp4Slider = 0.5
         initTime4Slider = 0
@@ -310,12 +314,12 @@ class tracePickingWindow:
         
         self.figureObject,self.mainDataAxis,ampSliderAxis,timeSliderAxis,windowSizeSliderAxis,self.ampSlider,self.timeSlider,self.windowSizeSlider = self.setUpFigLayout(initAmp4Slider,initTime4Slider,initWindowSize4Slider)
         
-        self.mainDataAxis.plot(traceData,t,'k')
-        self.mainDataAxis.fill_betweenx(t,0,traceData,where=traceData<0,color='k',interpolate=True)
+        self.mainDataAxis.plot(self.traceData,self.t,'k')
+        self.mainDataAxis.fill_betweenx(self.t,0,self.traceData,where=self.traceData<0,color='k',interpolate=True)
         
-        self.ampSlider.on_changed(updateFigure)
-        self.timeSlider.on_changed(updateFigure)
-        self.windowSizeSlider.on_changed(updateFigure)
+        self.ampSlider.on_changed(self.updateFigure)
+        self.timeSlider.on_changed(self.updateFigure)
+        self.windowSizeSlider.on_changed(self.updateFigure)
         
 
     def setUpFigLayout(self,initAmpSliderVal,initTimeSliderVal,initWinSizeVal):
@@ -356,40 +360,43 @@ class tracePickingWindow:
     
 
 
-if __name__ == '__main__':
+class picker():
 
-    applyBPFilt = True
-    #applyBPFilt = False
-    lf = 10
-    hf = 120
-    nq = 500 #Nyquist Frequency
-    order = 4    
-    pickFile = 'test.txt'
-    picks = np.loadtxt(pickFile)
-    #Add function to check for duplicates
-    
-    suFile = 'dataFiles/shot_01068m_stacked.su'
-    
-    #* HARD CODED FOR NOW. We will need to click and open a browser to select
-    #This Path
-    dirName = r"C:\Users\Fli034\Documents\firstArrivalPicker\eRFP_Develop\first-arrival-picker\dataFiles\survey1"
-    shotLoc = 918
-    fileInfo = getFileInfo(dirName)
-    
-    #Hard coded logic to search for shot value (shoult this be exact or appox?)
-    tmpShotLocs = np.zeros((len(fileInfo),1))
-    for k in range(0,len(fileInfo)):
-        tmpShotLocs[k] = fileInfo[k][1]
-    ind = np.argmin(((tmpShotLocs-shotLoc)**2)**0.5)
-    #******************************************************
-    
-    [x,t,data,gx,shotLoc] = getData('segy', os.path.join(dirName, fileInfo[ind][0]))
-    if applyBPFilt:
-        data = bpData(data,lf,hf,nq,order)
-    data = normalizeTraces(data)
-    
-    a = mainPickingWindow(x,t,data,shotLoc,pickFile)
-    b = tracePickingWindow(x,t,data,shotLoc,10,pickFile)
+    def __init__(self):
+        applyBPFilt = True
+        #applyBPFilt = False
+        lf = 10
+        hf = 120
+        nq = 500 #Nyquist Frequency
+        order = 4    
+        pickFile = 'test.txt'
+        picks = np.loadtxt(pickFile)
+        #Add function to check for duplicates
+        
+        suFile = 'dataFiles/shot_01068m_stacked.su'
+        
+        #* HARD CODED FOR NOW. We will need to click and open a browser to select
+        #This Path
+        dirName = r"C:\Users\Fli034\Documents\firstArrivalPicker\eRFP_Develop\first-arrival-picker\dataFiles\survey1"
+        dirName = "./dataFiles/survey1"
+        shotLoc = 918
+        fileInfo = getFileInfo(dirName)
+        
+        #Hard coded logic to search for shot value (shoult this be exact or appox?)
+        tmpShotLocs = np.zeros((len(fileInfo),1))
+        for k in range(0,len(fileInfo)):
+            tmpShotLocs[k] = fileInfo[k][1]
+        ind = np.argmin(((tmpShotLocs-shotLoc)**2)**0.5)
+        #******************************************************
+        
+        [x,t,data,gx,shotLoc] = getData('segy', os.path.join(dirName, fileInfo[ind][0]))
+        if applyBPFilt:
+            data = bpData(data,lf,hf,nq,order)
+        data = normalizeTraces(data)
+        
+        self.a = mainPickingWindow(x,t,data,shotLoc,pickFile)
+        self.b = tracePickingWindow(x,t,data,shotLoc,10,pickFile)
+
 #    
 #    def whenClicked(event):
 #        b.mainDataAxis.time_onclick = time.time()
@@ -418,4 +425,6 @@ if __name__ == '__main__':
 #    a.figureObject.canvas.mpl_connect('button_press_event',whenClicked2)
 #    a.figureObject.canvas.mpl_connect('button_release_event',getTrace)
     
+if __name__ == '__main__':
+    picker()
     plt.show()
