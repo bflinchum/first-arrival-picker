@@ -420,7 +420,7 @@ if __name__ == '__main__':
     
     #* HARD CODED FOR NOW. We will need to click and open a browser to select
     #This Path
-    dirName = r"C:\Users\Fli034\Documents\firstArrivalPicker\eRFP_Develop\first-arrival-picker\dataFiles\survey1"
+    dirName = r"C:\Users\Fli034\Dropbox\CSIRODocuments\firstArrivalPicker\eRFP_Develop\first-arrival-picker\dataFiles\survey1"
     shotLoc = 918
     fileInfo = getFileInfo(dirName)
     
