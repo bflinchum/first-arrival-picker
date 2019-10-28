@@ -350,8 +350,8 @@ class doPicks:
         x0 = x[0]
         
         #Plot picks if they exists
-        self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFile)
-        self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+        self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
+        self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
         
         # I couldn't seem to move these out as a method because I call tracePickWindow
         #inside the funciton so it has to be defined locally....
@@ -362,14 +362,14 @@ class doPicks:
             if event.button == 1 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
                 tPick = event.ydata
                 self.writePick(shotLoc,tPick,pickFileName)
-                self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFile)
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+                self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
+                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
                 #print(tPick)
             if event.button == 3 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
                 tPick = event.ydata
                 self.deletePick(shotLoc,tPick,pickFileName)
-                self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFile)
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+                self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
+                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
                 
         def switchTraces(event):
             if event.key=='right':
@@ -378,14 +378,14 @@ class doPicks:
                 cWindowSize = tracePickWindow.windowSizeSlider.val
                 self.cTrace = self.cTrace + 1
                 tracePickWindow.traceNum = self.cTrace
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
             elif event.key=='left':
                 cSliderVal = tracePickWindow.ampSlider.val
                 cTimeVal = tracePickWindow.timeSlider.val
                 cWindowSize = tracePickWindow.windowSizeSlider.val                
                 self.cTrace = self.cTrace - 1
                 tracePickWindow.traceNum = self.cTrace #Last minute modification...Update this attribute so sliders work better.
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
         tracePickWindow.figureObject.canvas.mpl_connect('button_press_event',whenClickedTraceWindow)
         tracePickWindow.figureObject.canvas.mpl_connect('button_release_event',whenReleasedTraceWindow)
         tracePickWindow.figureObject.canvas.mpl_connect('key_press_event',switchTraces)
