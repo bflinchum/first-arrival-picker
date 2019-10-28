@@ -335,10 +335,14 @@ class tracePickingWindow:
     
 class doPicks:
     def __init__(self,x,t,data,shotLoc,initTraceNumb,pickFileName):
+        #Define object-level attributes
+        self.x = x
+        self.t = t
+        self.data = data
         
         #Create both windows with initalized values
-        tracePickWindow = tracePickingWindow(x,t,data,shotLoc,initTraceNumb)
-        mainWindowObject = mainPickingWindow(x,t,data,shotLoc)
+        tracePickWindow = tracePickingWindow(self.x,self.t,self.data,shotLoc,initTraceNumb)
+        mainWindowObject = mainPickingWindow(self.x,self.t,self.data,shotLoc)
         
         #Create an attribute to keep track of current trace (this will need travel throughout the class)
         self.cTrace = initTraceNumb
@@ -346,8 +350,8 @@ class doPicks:
 
                 
         #Local variables to help me calcualte trace index
-        gx = np.diff(x)[0]
-        x0 = x[0]
+        gx = np.diff(self.x)[0]
+        x0 = self.x[0]
         
         #Plot picks if they exists
         self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
@@ -399,18 +403,18 @@ class doPicks:
                 traceNum = np.round((xPick-x0)/gx)
                 if traceNum < 0:
                     traceNum = 0
-                elif traceNum > len(x):
-                    traceNum = len(x)
+                elif traceNum > len(self.x):
+                    traceNum = len(self.x)
                     
                 cSliderVal = tracePickWindow.ampSlider.val
                 cTimeVal = tracePickWindow.timeSlider.val
                 cWindowSize = tracePickWindow.windowSizeSlider.val
                 self.cTrace = int(traceNum)
                 tracePickWindow.traceNum = self.cTrace
-                traceData = data[:,self.cTrace]
+                traceData = self.data[:,self.cTrace]
                 tracePickWindow.mainDataAxis.clear()
-                tracePickWindow.mainDataAxis.plot(traceData,t,'k')
-                tracePickWindow.mainDataAxis.fill_betweenx(t,0,traceData,where=traceData<0,color='k',interpolate=True)
+                tracePickWindow.mainDataAxis.plot(traceData,self.t,'k')
+                tracePickWindow.mainDataAxis.fill_betweenx(self.t,0,traceData,where=traceData<0,color='k',interpolate=True)
                 tracePickWindow.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
                 tracePickWindow.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
                 tracePickWindow.mainDataAxis.invert_yaxis()
@@ -433,8 +437,8 @@ class doPicks:
         return indRepeat
     
     def deletePick(self,c_shotLoc,c_tPick,pickFile):
-        c_xPick = x[self.cTrace]
-        if os.path.exists(pickFile):            
+        c_xPick = self.x[self.cTrace]
+        if os.path.exists(pickFile):
             tempData = np.loadtxt(pickFile)
             shotLocs = tempData[:,0]
             xPicks = tempData[:,1]
@@ -450,7 +454,7 @@ class doPicks:
             
             
     def writePick(self,c_shotLoc,c_tPick,pickFile):
-        c_xPick = x[self.cTrace]
+        c_xPick = self.x[self.cTrace]
         
         if os.path.exists(pickFile):            
             tempData = np.loadtxt(pickFile)
@@ -460,7 +464,7 @@ class doPicks:
             indRepeat = self.findIndRepeat(xPicks,shotLocs,c_xPick,c_shotLoc)
             if indRepeat == -999: #In otherwords no repeat
                 shotLocs = np.append(shotLocs,c_shotLoc)
-                xPicks = np.append(xPicks,x[self.cTrace])
+                xPicks = np.append(xPicks, c_xPick)
                 tPicks = np.append(tPicks,c_tPick)
                 tempArr = np.column_stack((shotLocs,xPicks,tPicks))
                 lexInd = np.lexsort((tempArr[:,1],tempArr[:,0]))
@@ -468,7 +472,7 @@ class doPicks:
                 np.savetxt(pickFile,tempArr,fmt='%10.5f')
             else:
                 shotLocs[indRepeat] = c_shotLoc
-                xPicks[indRepeat] = x[self.cTrace]
+                xPicks[indRepeat] = c_xPick
                 tPicks[indRepeat] = c_tPick
                 tempArr = np.column_stack((shotLocs,xPicks,tPicks))
                 lexInd = np.lexsort((tempArr[:,1],tempArr[:,0]))
@@ -495,7 +499,7 @@ class doPicks:
         cSliderVal = mainWindowObject.ampSlider.val
         cTimeVal = mainWindowObject.timeSlider.val
         mainWindowObject.mainDataAxis.clear()
-        mainWindowObject.mainDataAxis.pcolorfast(np.append(x,x[-1]+mainWindowObject.gx),np.append(t,t[-1]+mainWindowObject.dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
+        mainWindowObject.mainDataAxis.pcolorfast(np.append(self.x,self.x[-1]+mainWindowObject.gx),np.append(self.t,self.t[-1]+mainWindowObject.dt),self.data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
         mainWindowObject.mainDataAxis.scatter(xPicks,tPicks,marker=1,s=50,c='c')
         print('made it here')
 #            if not (self.shotLocs == []):
@@ -516,7 +520,7 @@ class doPicks:
             indShots = np.where(shotLocs==shotLoc)
             xPicks = xPicks[indShots]
             tPicks = tPicks[indShots]
-            indTrace = np.where(xPicks==x[self.cTrace])
+            indTrace = np.where(xPicks==self.x[self.cTrace])
             xPicks = xPicks[indTrace]*0
             tPicks = tPicks[indTrace]
         else:
@@ -528,10 +532,10 @@ class doPicks:
         cTimeVal = traceWindowObject.timeSlider.val
         cWindowSize = traceWindowObject.windowSizeSlider.val
         traceWindowObject.traceNum = self.cTrace
-        traceData = data[:,self.cTrace]
+        traceData = self.data[:,self.cTrace]
         traceWindowObject.mainDataAxis.clear()
-        traceWindowObject.mainDataAxis.plot(traceData,t,'k')
-        traceWindowObject.mainDataAxis.fill_betweenx(t,0,traceData,where=traceData<0,color='k',interpolate=True)
+        traceWindowObject.mainDataAxis.plot(traceData,self.t,'k')
+        traceWindowObject.mainDataAxis.fill_betweenx(self.t,0,traceData,where=traceData<0,color='k',interpolate=True)
         traceWindowObject.mainDataAxis.scatter(xPicks,tPicks,marker='_',s=200,c='r')
         traceWindowObject.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
         traceWindowObject.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
