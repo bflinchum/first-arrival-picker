@@ -335,10 +335,17 @@ class tracePickingWindow:
     
 class doPicks:
     def __init__(self,x,t,data,shotLoc,initTraceNumb,pickFileName):
+        #Define object-level attributes
+        self.x = x
+        self.t = t
+        self.data = data
         
         #Create both windows with initalized values
-        tracePickWindow = tracePickingWindow(x,t,data,shotLoc,initTraceNumb)
-        mainWindowObject = mainPickingWindow(x,t,data,shotLoc)
+        tracePickWindow = tracePickingWindow(self.x,self.t,self.data,shotLoc,initTraceNumb)
+        mainWindowObject = mainPickingWindow(self.x,self.t,self.data,shotLoc)
+
+        self.tracePickWindow = tracePickWindow
+        self.mainWindowObject = mainWindowObject
         
         #Create an attribute to keep track of current trace (this will need travel throughout the class)
         self.cTrace = initTraceNumb
@@ -346,12 +353,12 @@ class doPicks:
 
                 
         #Local variables to help me calcualte trace index
-        gx = np.diff(x)[0]
-        x0 = x[0]
+        gx = np.diff(self.x)[0]
+        x0 = self.x[0]
         
         #Plot picks if they exists
-        self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFile)
-        self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+        self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
+        self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
         
         # I couldn't seem to move these out as a method because I call tracePickWindow
         #inside the funciton so it has to be defined locally....
@@ -359,17 +366,18 @@ class doPicks:
             tracePickWindow.mainDataAxis.time_onclick = time.time()
         def whenReleasedTraceWindow(event):
             MAX_CLICK_LENGTH = 0.2
-            if event.button == 1 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
-                tPick = event.ydata
-                self.writePick(shotLoc,tPick,pickFileName)
-                self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFile)
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
-                #print(tPick)
-            if event.button == 3 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
-                tPick = event.ydata
-                self.deletePick(shotLoc,tPick,pickFileName)
-                self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFile)
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+            if event.inaxes == tracePickWindow.mainDataAxis:
+                if event.button == 1 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
+                    tPick = event.ydata
+                    self.writePick(shotLoc,tPick,pickFileName)
+                    self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
+                    self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
+                    #print(tPick)
+                if event.button == 3 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
+                    tPick = event.ydata
+                    self.deletePick(shotLoc,tPick,pickFileName)
+                    self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
+                    self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
                 
         def switchTraces(event):
             if event.key=='right':
@@ -378,14 +386,14 @@ class doPicks:
                 cWindowSize = tracePickWindow.windowSizeSlider.val
                 self.cTrace = self.cTrace + 1
                 tracePickWindow.traceNum = self.cTrace
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
             elif event.key=='left':
                 cSliderVal = tracePickWindow.ampSlider.val
                 cTimeVal = tracePickWindow.timeSlider.val
                 cWindowSize = tracePickWindow.windowSizeSlider.val                
                 self.cTrace = self.cTrace - 1
                 tracePickWindow.traceNum = self.cTrace #Last minute modification...Update this attribute so sliders work better.
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFile)
+                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
         tracePickWindow.figureObject.canvas.mpl_connect('button_press_event',whenClickedTraceWindow)
         tracePickWindow.figureObject.canvas.mpl_connect('button_release_event',whenReleasedTraceWindow)
         tracePickWindow.figureObject.canvas.mpl_connect('key_press_event',switchTraces)
@@ -394,29 +402,30 @@ class doPicks:
             mainWindowObject.mainDataAxis.time_onclick = time.time()         
         def getTraceMainWindow(event):
             MAX_CLICK_LENGTH = 0.2
-            if event.button == 1 and (time.time() - mainWindowObject.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
-                xPick = event.xdata
-                traceNum = np.round((xPick-x0)/gx)
-                if traceNum < 0:
-                    traceNum = 0
-                elif traceNum > len(x):
-                    traceNum = len(x)
-                    
-                cSliderVal = tracePickWindow.ampSlider.val
-                cTimeVal = tracePickWindow.timeSlider.val
-                cWindowSize = tracePickWindow.windowSizeSlider.val
-                self.cTrace = int(traceNum)
-                tracePickWindow.traceNum = self.cTrace
-                traceData = data[:,self.cTrace]
-                tracePickWindow.mainDataAxis.clear()
-                tracePickWindow.mainDataAxis.plot(traceData,t,'k')
-                tracePickWindow.mainDataAxis.fill_betweenx(t,0,traceData,where=traceData<0,color='k',interpolate=True)
-                tracePickWindow.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
-                tracePickWindow.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
-                tracePickWindow.mainDataAxis.invert_yaxis()
-                tracePickWindow.mainDataAxis.set_xlabel('Distance (m)')
-                tracePickWindow.mainDataAxis.set_ylabel('Time (s)')
-                tracePickWindow.figureObject.canvas.draw()
+            if event.inaxes == mainWindowObject.mainDataAxis:
+                if event.button == 1 and (time.time() - mainWindowObject.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
+                    xPick = event.xdata
+                    traceNum = np.round((xPick-x0)/gx)
+                    if traceNum < 0:
+                        traceNum = 0
+                    elif traceNum > len(self.x):
+                        traceNum = len(self.x)
+                        
+                    cSliderVal = tracePickWindow.ampSlider.val
+                    cTimeVal = tracePickWindow.timeSlider.val
+                    cWindowSize = tracePickWindow.windowSizeSlider.val
+                    self.cTrace = int(traceNum)
+                    tracePickWindow.traceNum = self.cTrace
+                    traceData = self.data[:,self.cTrace]
+                    tracePickWindow.mainDataAxis.clear()
+                    tracePickWindow.mainDataAxis.plot(traceData,self.t,'k')
+                    tracePickWindow.mainDataAxis.fill_betweenx(self.t,0,traceData,where=traceData<0,color='k',interpolate=True)
+                    tracePickWindow.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
+                    tracePickWindow.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
+                    tracePickWindow.mainDataAxis.invert_yaxis()
+                    tracePickWindow.mainDataAxis.set_xlabel('Distance (m)')
+                    tracePickWindow.mainDataAxis.set_ylabel('Time (s)')
+                    tracePickWindow.figureObject.canvas.draw()
        
         mainWindowObject.figureObject.canvas.mpl_connect('button_press_event',whenClickedMainWindow)
         mainWindowObject.figureObject.canvas.mpl_connect('button_release_event',getTraceMainWindow)
@@ -433,8 +442,8 @@ class doPicks:
         return indRepeat
     
     def deletePick(self,c_shotLoc,c_tPick,pickFile):
-        c_xPick = x[self.cTrace]
-        if os.path.exists(pickFile):            
+        c_xPick = self.x[self.cTrace]
+        if os.path.exists(pickFile):
             tempData = np.loadtxt(pickFile)
             shotLocs = tempData[:,0]
             xPicks = tempData[:,1]
@@ -450,7 +459,7 @@ class doPicks:
             
             
     def writePick(self,c_shotLoc,c_tPick,pickFile):
-        c_xPick = x[self.cTrace]
+        c_xPick = self.x[self.cTrace]
         
         if os.path.exists(pickFile):            
             tempData = np.loadtxt(pickFile)
@@ -460,7 +469,7 @@ class doPicks:
             indRepeat = self.findIndRepeat(xPicks,shotLocs,c_xPick,c_shotLoc)
             if indRepeat == -999: #In otherwords no repeat
                 shotLocs = np.append(shotLocs,c_shotLoc)
-                xPicks = np.append(xPicks,x[self.cTrace])
+                xPicks = np.append(xPicks, c_xPick)
                 tPicks = np.append(tPicks,c_tPick)
                 tempArr = np.column_stack((shotLocs,xPicks,tPicks))
                 lexInd = np.lexsort((tempArr[:,1],tempArr[:,0]))
@@ -468,7 +477,7 @@ class doPicks:
                 np.savetxt(pickFile,tempArr,fmt='%10.5f')
             else:
                 shotLocs[indRepeat] = c_shotLoc
-                xPicks[indRepeat] = x[self.cTrace]
+                xPicks[indRepeat] = c_xPick
                 tPicks[indRepeat] = c_tPick
                 tempArr = np.column_stack((shotLocs,xPicks,tPicks))
                 lexInd = np.lexsort((tempArr[:,1],tempArr[:,0]))
@@ -495,7 +504,7 @@ class doPicks:
         cSliderVal = mainWindowObject.ampSlider.val
         cTimeVal = mainWindowObject.timeSlider.val
         mainWindowObject.mainDataAxis.clear()
-        mainWindowObject.mainDataAxis.pcolorfast(np.append(x,x[-1]+mainWindowObject.gx),np.append(t,t[-1]+mainWindowObject.dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
+        mainWindowObject.mainDataAxis.pcolorfast(np.append(self.x,self.x[-1]+mainWindowObject.gx),np.append(self.t,self.t[-1]+mainWindowObject.dt),self.data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
         mainWindowObject.mainDataAxis.scatter(xPicks,tPicks,marker=1,s=50,c='c')
         print('made it here')
 #            if not (self.shotLocs == []):
@@ -516,7 +525,7 @@ class doPicks:
             indShots = np.where(shotLocs==shotLoc)
             xPicks = xPicks[indShots]
             tPicks = tPicks[indShots]
-            indTrace = np.where(xPicks==x[self.cTrace])
+            indTrace = np.where(xPicks==self.x[self.cTrace])
             xPicks = xPicks[indTrace]*0
             tPicks = tPicks[indTrace]
         else:
@@ -528,10 +537,10 @@ class doPicks:
         cTimeVal = traceWindowObject.timeSlider.val
         cWindowSize = traceWindowObject.windowSizeSlider.val
         traceWindowObject.traceNum = self.cTrace
-        traceData = data[:,self.cTrace]
+        traceData = self.data[:,self.cTrace]
         traceWindowObject.mainDataAxis.clear()
-        traceWindowObject.mainDataAxis.plot(traceData,t,'k')
-        traceWindowObject.mainDataAxis.fill_betweenx(t,0,traceData,where=traceData<0,color='k',interpolate=True)
+        traceWindowObject.mainDataAxis.plot(traceData,self.t,'k')
+        traceWindowObject.mainDataAxis.fill_betweenx(self.t,0,traceData,where=traceData<0,color='k',interpolate=True)
         traceWindowObject.mainDataAxis.scatter(xPicks,tPicks,marker='_',s=200,c='r')
         traceWindowObject.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
         traceWindowObject.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
@@ -542,39 +551,41 @@ class doPicks:
             
             
 
+class picker():
+
+    def __init__(self):
+        applyBPFilt = True
+        #applyBPFilt = False
+        lf = 10
+        hf = 120
+        nq = 500 #Nyquist Frequency
+        order = 4    
+        pickFile = 'test.txt'
+        picks = np.loadtxt(pickFile)
+        #Add function to check for duplicates
+        
+        suFile = 'dataFiles/shot_01068m_stacked.su'
+        
+        #* HARD CODED FOR NOW. We will need to click and open a browser to select
+        #This Path
+        dirName = "./dataFiles/survey1"
+        shotLoc = 918
+        fileInfo = getFileInfo(dirName)
+        
+        #Hard coded logic to search for shot value (shoult this be exact or appox?)
+        tmpShotLocs = np.zeros((len(fileInfo),1))
+        for k in range(0,len(fileInfo)):
+            tmpShotLocs[k] = fileInfo[k][1]
+        ind = np.argmin(((tmpShotLocs-shotLoc)**2)**0.5)
+        #******************************************************
+        
+        [x,t,data,gx,shotLoc] = getData('segy', os.path.join(dirName, fileInfo[ind][0]))
+        if applyBPFilt:
+            data = bpData(data,lf,hf,nq,order)
+        data = normalizeTraces(data)
+
+        self.c = doPicks(x,t,data,shotLoc,10,pickFile)
+
 if __name__ == '__main__':
-
-    applyBPFilt = True
-    #applyBPFilt = False
-    lf = 10
-    hf = 120
-    nq = 500 #Nyquist Frequency
-    order = 4    
-    pickFile = 'test.txt'
-    picks = np.loadtxt(pickFile)
-    #Add function to check for duplicates
-    
-    suFile = 'dataFiles/shot_01068m_stacked.su'
-    
-    #* HARD CODED FOR NOW. We will need to click and open a browser to select
-    #This Path
-    dirName = r"C:\Users\Fli034\Dropbox\CSIRODocuments\firstArrivalPicker\eRFP_Develop\first-arrival-picker\dataFiles\survey1"
-    shotLoc = 918
-    fileInfo = getFileInfo(dirName)
-    
-    #Hard coded logic to search for shot value (shoult this be exact or appox?)
-    tmpShotLocs = np.zeros((len(fileInfo),1))
-    for k in range(0,len(fileInfo)):
-        tmpShotLocs[k] = fileInfo[k][1]
-    ind = np.argmin(((tmpShotLocs-shotLoc)**2)**0.5)
-    #******************************************************
-    
-    [x,t,data,gx,shotLoc] = getData('segy', os.path.join(dirName, fileInfo[ind][0]))
-    if applyBPFilt:
-        data = bpData(data,lf,hf,nq,order)
-    data = normalizeTraces(data)
-
-    c = doPicks(x,t,data,shotLoc,10,pickFile)
-
-    
+    picker()
     plt.show()
