@@ -7,7 +7,7 @@ import numpy as np
 import wx
 import wx.lib.mixins.inspection as WIT
 
-from picker_v2 import picker
+from picker import picker
 
 ###### Example for displaying a MatPlotLib Figure! ######
 class FigurePanel(wx.Panel):
