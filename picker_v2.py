@@ -366,17 +366,18 @@ class doPicks:
             tracePickWindow.mainDataAxis.time_onclick = time.time()
         def whenReleasedTraceWindow(event):
             MAX_CLICK_LENGTH = 0.2
-            if event.button == 1 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
-                tPick = event.ydata
-                self.writePick(shotLoc,tPick,pickFileName)
-                self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
-                #print(tPick)
-            if event.button == 3 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
-                tPick = event.ydata
-                self.deletePick(shotLoc,tPick,pickFileName)
-                self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
-                self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
+            if event.inaxes == tracePickWindow.mainDataAxis:
+                if event.button == 1 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
+                    tPick = event.ydata
+                    self.writePick(shotLoc,tPick,pickFileName)
+                    self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
+                    self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
+                    #print(tPick)
+                if event.button == 3 and (time.time() - tracePickWindow.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
+                    tPick = event.ydata
+                    self.deletePick(shotLoc,tPick,pickFileName)
+                    self.updatePicksMainWindow(mainWindowObject,shotLoc,pickFileName)
+                    self.updatePicksTraceWindow(tracePickWindow,shotLoc,pickFileName)
                 
         def switchTraces(event):
             if event.key=='right':
@@ -401,29 +402,30 @@ class doPicks:
             mainWindowObject.mainDataAxis.time_onclick = time.time()         
         def getTraceMainWindow(event):
             MAX_CLICK_LENGTH = 0.2
-            if event.button == 1 and (time.time() - mainWindowObject.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
-                xPick = event.xdata
-                traceNum = np.round((xPick-x0)/gx)
-                if traceNum < 0:
-                    traceNum = 0
-                elif traceNum > len(self.x):
-                    traceNum = len(self.x)
-                    
-                cSliderVal = tracePickWindow.ampSlider.val
-                cTimeVal = tracePickWindow.timeSlider.val
-                cWindowSize = tracePickWindow.windowSizeSlider.val
-                self.cTrace = int(traceNum)
-                tracePickWindow.traceNum = self.cTrace
-                traceData = self.data[:,self.cTrace]
-                tracePickWindow.mainDataAxis.clear()
-                tracePickWindow.mainDataAxis.plot(traceData,self.t,'k')
-                tracePickWindow.mainDataAxis.fill_betweenx(self.t,0,traceData,where=traceData<0,color='k',interpolate=True)
-                tracePickWindow.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
-                tracePickWindow.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
-                tracePickWindow.mainDataAxis.invert_yaxis()
-                tracePickWindow.mainDataAxis.set_xlabel('Distance (m)')
-                tracePickWindow.mainDataAxis.set_ylabel('Time (s)')
-                tracePickWindow.figureObject.canvas.draw()
+            if event.inaxes == mainWindowObject.mainDataAxis:
+                if event.button == 1 and (time.time() - mainWindowObject.mainDataAxis.time_onclick) < MAX_CLICK_LENGTH:
+                    xPick = event.xdata
+                    traceNum = np.round((xPick-x0)/gx)
+                    if traceNum < 0:
+                        traceNum = 0
+                    elif traceNum > len(self.x):
+                        traceNum = len(self.x)
+                        
+                    cSliderVal = tracePickWindow.ampSlider.val
+                    cTimeVal = tracePickWindow.timeSlider.val
+                    cWindowSize = tracePickWindow.windowSizeSlider.val
+                    self.cTrace = int(traceNum)
+                    tracePickWindow.traceNum = self.cTrace
+                    traceData = self.data[:,self.cTrace]
+                    tracePickWindow.mainDataAxis.clear()
+                    tracePickWindow.mainDataAxis.plot(traceData,self.t,'k')
+                    tracePickWindow.mainDataAxis.fill_betweenx(self.t,0,traceData,where=traceData<0,color='k',interpolate=True)
+                    tracePickWindow.mainDataAxis.set_ylim([cTimeVal,cTimeVal+cWindowSize])
+                    tracePickWindow.mainDataAxis.set_xlim([-cSliderVal,cSliderVal])
+                    tracePickWindow.mainDataAxis.invert_yaxis()
+                    tracePickWindow.mainDataAxis.set_xlabel('Distance (m)')
+                    tracePickWindow.mainDataAxis.set_ylabel('Time (s)')
+                    tracePickWindow.figureObject.canvas.draw()
        
         mainWindowObject.figureObject.canvas.mpl_connect('button_press_event',whenClickedMainWindow)
         mainWindowObject.figureObject.canvas.mpl_connect('button_release_event',getTraceMainWindow)
