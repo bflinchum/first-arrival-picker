@@ -128,18 +128,35 @@ class MainFrame(wx.Frame):
         self.SetSizeHints(self.Size)
 
     def menubar(self):
-        menuBar = wx.MenuBar()
+        # Define Menu Bar
+        menu_bar = wx.MenuBar()
 
-        fileButton = wx.Menu()
-        viewButton = wx.Menu()
+        #### File
+        file_menu = wx.Menu()
 
-        exitItem = fileButton.Append(wx.ID_EXIT, "Exit", "status msg...")
+        # Open
+        open_submenu = wx.Menu()
+        datafile_item = open_submenu.Append(wx.ID_ANY, "Data File")
+        file_menu.AppendSubMenu(open_submenu, "Open")
 
-        menuBar.Append(fileButton, "&File")
-        menuBar.Append(viewButton, "View")
+        # Quit
+        exit_button = file_menu.Append(wx.ID_EXIT, "Quit\tCtrl+q", "Quit the app")
+        self.Bind(wx.EVT_MENU, self.quit, exit_button)
 
-        self.SetMenuBar(menuBar)
-        self.Bind(wx.EVT_MENU, self.quit, exitItem)
+        #### View
+        view_menu = wx.Menu()
+
+        # Reciprocals
+        reciprocals_submenu = wx.Menu()
+        format_item = reciprocals_submenu.Append(wx.ID_ANY, "Format")
+        view_menu.AppendSubMenu(reciprocals_submenu, "Reciprocals")
+
+        # Append File and View to the Menu Bar
+        menu_bar.Append(file_menu, "&File")
+        menu_bar.Append(view_menu, "View")
+
+        # Set the Menu Bar
+        self.SetMenuBar(menu_bar)
 
     def quit(self, event):
         self.Close()
