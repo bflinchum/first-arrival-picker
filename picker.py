@@ -151,6 +151,10 @@ def bpData(data, lf, hf, nq, order):
 # Main Window class must intialize first because it will check if pick file exists
 class mainPickingWindow:
     def __init__(self, x, t, data, shotLoc):
+        # Define object-level attributes
+        self.x = x
+        self.t = t
+        self.data = data
         # LOCAL FUNCTIONS (NOT METHODS)****************************************
         # This has to be local because it can only take a single float as input
         # if I make it a method it requires "self" as an input--which means two
@@ -196,28 +200,17 @@ class mainPickingWindow:
         self.tPicks = []
 
         # Intial values for sliders
-        initAmp4Slider = 0.5
+        self.initAmp4Slider = 0.5
         initTime4Slider = 0.75
 
         # END LOCAL VARIABLES***************************************************
 
         # Set up the figure
         self.figureObject, self.mainDataAxis, ampSliderAxis, timeSliderAxis, self.ampSlider, self.timeSlider = self.setUpFigLayout(
-            initAmp4Slider, initTime4Slider
+            self.initAmp4Slider, initTime4Slider
         )
 
-        # Initialization of first plot
-        self.mainDataAxis.pcolorfast(
-            np.append(x, x[-1] + self.gx),
-            np.append(t, t[-1] + self.dt),
-            data,
-            vmin=-initAmp4Slider,
-            vmax=initAmp4Slider,
-            cmap="gray",
-        )
-        #        if not (self.shotLocs == []):
-        #           indShots = np.where(self.shotLocs==shotLoc)
-        #           self.mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
+        self.plot_data(self.mainDataAxis)
 
         # ACTIVATE SLIDERS
         # I had to make these properties so that they would self update....
@@ -226,6 +219,20 @@ class mainPickingWindow:
         self.timeSlider.on_changed(updateFigure)
 
         # plt.show() #This has to be the last command.
+
+    def plot_data(self, mainDataAxis):
+        # Initialization of first plot
+        mainDataAxis.pcolorfast(
+            np.append(self.x, self.x[-1] + self.gx),
+            np.append(self.t, self.t[-1] + self.dt),
+            self.data,
+            vmin=-self.initAmp4Slider,
+            vmax=self.initAmp4Slider,
+            cmap="gray",
+        )
+        #        if not (self.shotLocs == []):
+        #           indShots = np.where(self.shotLocs==shotLoc)
+        #           self.mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
 
     def setUpFigLayout(self, initAmpSliderVal, initTimeSliderVal):
         """
@@ -271,6 +278,10 @@ class mainPickingWindow:
 
 class tracePickingWindow:
     def __init__(self, x, t, data, shotLoc, traceNum):
+        # Define object-level attributes
+        self.x = x
+        self.t = t
+        self.data = data
         # LOCAL FUNCTIONS (NOT METHODS)****************************************
         # I know this is unconvential but the matplotlib sliders require this.
         def updateFigure(updateFloat):
@@ -314,7 +325,7 @@ class tracePickingWindow:
         self.tPicks = []
         # LOCAL VARIABLES*******************************************************
         # Calculate dt and gx (gx = geophone spacing in m)
-        traceData = data[:, self.traceNum]
+        self.traceData = data[:, self.traceNum]
         # Intial values for sliders
         initAmp4Slider = 0.5
         initTime4Slider = 0
@@ -325,14 +336,18 @@ class tracePickingWindow:
             initAmp4Slider, initTime4Slider, initWindowSize4Slider
         )
 
-        self.mainDataAxis.plot(traceData, t, "k")
-        self.mainDataAxis.fill_betweenx(
-            t, 0, traceData, where=traceData < 0, color="k", interpolate=True
-        )
+        self.plot_data(self.mainDataAxis)
 
         self.ampSlider.on_changed(updateFigure)
         self.timeSlider.on_changed(updateFigure)
         self.windowSizeSlider.on_changed(updateFigure)
+
+    def plot_data(self, mainDataAxis):
+        # Initialization of first plot
+        mainDataAxis.plot(self.traceData, self.t, "k")
+        mainDataAxis.fill_betweenx(
+            self.t, 0, self.traceData, where=self.traceData < 0, color="k", interpolate=True
+        )
 
     def setUpFigLayout(self, initAmpSliderVal, initTimeSliderVal, initWinSizeVal):
         """

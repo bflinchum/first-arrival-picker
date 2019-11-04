@@ -1,6 +1,7 @@
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx as NavigationToolbar
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+# import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -11,10 +12,13 @@ from picker import picker
 
 ###### Example for displaying a MatPlotLib Figure! ######
 class FigurePanel(wx.Panel):
-    def __init__(self, parent, figure):
+    def __init__(self, parent, figure_window):
         super().__init__(parent)
 
-        self.canvas = FigureCanvas(self, -1, figure)
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self, -1, self.figure)
+        self.subplot = self.figure.subplots(1)
+        figure_window.plot_data(self.subplot)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.canvas, wx.SizerFlags(1).Left().Top().Shaped())
@@ -61,13 +65,13 @@ class LeftSection(wx.BoxSizer):
 
 
 class MiddleSection(wx.BoxSizer):
-    def __init__(self, panel, figure):
+    def __init__(self, panel, figure_window):
         super().__init__(wx.VERTICAL)
 
         # Top
         topsizer = wx.BoxSizer(wx.VERTICAL)
         topsizer.Add(
-            FigurePanel(panel, figure), wx.SizerFlags(1).Shaped().Border(wx.BOTTOM)
+            FigurePanel(panel, figure_window), wx.SizerFlags(1).Shaped().Border(wx.BOTTOM)
         )
 
         # Bottom
@@ -86,9 +90,9 @@ class MiddleSection(wx.BoxSizer):
 
 
 class RightSection(wx.BoxSizer):
-    def __init__(self, panel, figure):
+    def __init__(self, panel, figure_window):
         super().__init__(wx.VERTICAL)
-        self.Add(FigurePanel(panel, figure), wx.SizerFlags(1).Shaped())
+        self.Add(FigurePanel(panel, figure_window), wx.SizerFlags(1).Shaped())
 
 
 class MainFrame(wx.Frame):
@@ -111,11 +115,11 @@ class MainFrame(wx.Frame):
 
         ### MIDDLE SECTION ###
         middlesection = MiddleSection(
-            panel, self.picker.c.mainWindowObject.figureObject
+            panel, self.picker.c.mainWindowObject
         )
 
         ### RIGHT SECTION ###
-        rightsection = RightSection(panel, self.picker.c.tracePickWindow.figureObject)
+        rightsection = RightSection(panel, self.picker.c.tracePickWindow)
 
         ### Add left and right sections to the main sizer
         mainsizer = wx.BoxSizer(wx.HORIZONTAL)
