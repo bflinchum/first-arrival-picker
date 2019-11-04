@@ -18,6 +18,7 @@ class FigurePanel(wx.Panel):
         self.figure = Figure()
         self.canvas = FigureCanvas(self, -1, self.figure)
         self.subplot = self.figure.subplots(1)
+        figure_window.setAxisLimits(self.subplot)
         figure_window.plot_data(self.subplot)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -168,7 +169,7 @@ class MainFrame(wx.Frame):
 
 class App(wx.App):
     def __init__(self):
-        "Create the main window and insert the custom frame"
+        "Create the main window and insert the MainFrame"
         super().__init__()
         MainFrame(
             None, title="Seismic First Arrival Picker Layout v1", size=(1400, 825)
