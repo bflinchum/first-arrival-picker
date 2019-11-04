@@ -237,6 +237,34 @@ class mainPickingWindow(PickingWindow):
         #           indShots = np.where(self.shotLocs==shotLoc)
         #           self.mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
 
+    def setAxisLimits(self, mainDataAxis):
+        mainDataAxis.set_ylim([0, self.initAmp])
+        mainDataAxis.set_ylim([0, self.initTime])
+        mainDataAxis.invert_yaxis()
+        mainDataAxis.set_xlabel("Channel")
+        mainDataAxis.set_ylabel("Time (s)")
+
+    def setUpSliders(self, figure):
+        gs = gridspec.GridSpec(5, 1, height_ratios=[5, 0.5, 0.25, 0.25, 0.25])
+        mainDataAxis = figure.add_subplot(
+            gs[0]
+        )  # Main data axes (matplotLib axis object)
+        ampSliderAxis = figure.add_subplot(
+            gs[2]
+        )  # Amplitude slider for main data (matplotLib axis object)
+        timeSliderAxis = figure.add_subplot(
+            gs[3]
+        )  # Time slider for main data (matplotLib axis object)
+
+        self.ampSlider = Slider(
+            ampSliderAxis, "Amplitude", 0, 1, valinit=self.initAmp, valstep=0.01
+        )
+        self.timeSlider = Slider(
+            timeSliderAxis, "Max Time", 0, 1, valinit=self.initTime, valstep=0.05
+        )
+
+        return mainDataAxis
+
     def setUpFigLayout(self):
         """
         This will set up the main window layout.
@@ -253,40 +281,13 @@ class mainPickingWindow(PickingWindow):
             timeSlider = the time "Slider" object
         """
         self.figure = plt.figure(1, dpi=100, figsize=[8, 7])  # Sizes hard-coded...
-        gs = gridspec.GridSpec(5, 1, height_ratios=[5, 0.5, 0.25, 0.25, 0.25])
-        mainDataAxis = self.figure.add_subplot(
-            gs[0]
-        )  # Main data axes (matplotLib axis object)
-        ampSliderAxis = self.figure.add_subplot(
-            gs[2]
-        )  # Amplitude slider for main data (matplotLib axis object)
-        timeSliderAxis = self.figure.add_subplot(
-            gs[3]
-        )  # Time slider for main data (matplotLib axis object)
 
-        self.ampSlider = Slider(
-            ampSliderAxis, "Amplitude", 0, 1, valinit=self.initAmp, valstep=0.01
-        )
-        self.timeSlider = Slider(
-            timeSliderAxis, "Max Time", 0, 1, valinit=self.initTime, valstep=0.05
-        )
-
-        # mainDataAxis.set_ylim([0, self.initAmp])
-        # mainDataAxis.set_ylim([0, self.initTime])
-        # mainDataAxis.invert_yaxis()
-        # mainDataAxis.set_xlabel("Channel")
-        # mainDataAxis.set_ylabel("Time (s)")
+        mainDataAxis = self.setUpSliders(self.figure)
 
         self.setAxisLimits(mainDataAxis)
 
         return mainDataAxis
 
-    def setAxisLimits(self, mainDataAxis):
-        mainDataAxis.set_ylim([0, self.initAmp])
-        mainDataAxis.set_ylim([0, self.initTime])
-        mainDataAxis.invert_yaxis()
-        mainDataAxis.set_xlabel("Channel")
-        mainDataAxis.set_ylabel("Time (s)")
 
 class tracePickingWindow(PickingWindow):
     def __init__(self, x, t, data, shotLoc, traceNum):
@@ -357,36 +358,25 @@ class tracePickingWindow(PickingWindow):
             self.t, 0, self.traceData, where=self.traceData < 0, color="k", interpolate=True
         )
 
-    def setUpFigLayout(self):
-        """
-        This will set up the main window layout.
-        INPUTS:
-            initAmp = the initial value for the amplitude slider
-            initTime = the intial value for the time slider
-            initWindowSize = the initial value for the window size (time)
-            
-        OUTPUTS:
-            figure = the main figure window (matplotLib Figure object)
-            mainDataAxis = Main data axes (matplotLib axis object)
-            ampSliderAxis = Amplitude slider for main data (matplotLib axis object)
-            timeSliderAxis = Time slider for main data (matplotLib axis object)
-            windowSizeSliderAxis = Time slider for main data (matplotLib axis object)
-            ampSlider = The amplitude "Slider" Object
-            timeSlider = the time "Slider" object
-            windowSizeSlider = the window size "Slider" object
-        """
-        self.figure = plt.figure(2, dpi=100, figsize=[4, 7])  # Sizes hard-coded...
+    def setAxisLimits(self, mainDataAxis):
+        mainDataAxis.set_ylim([self.initTime, self.initTime + self.initWindowSize])
+        mainDataAxis.set_xlim([-self.initAmp, self.initAmp])
+        mainDataAxis.invert_yaxis()
+        mainDataAxis.set_xlabel("Normalized Amplitude")
+        mainDataAxis.set_ylabel("Time (s)")
+    
+    def setUpSliders(self, figure):
         gs = gridspec.GridSpec(5, 1, height_ratios=[5, 0.5, 0.25, 0.25, 0.25])
-        mainDataAxis = self.figure.add_subplot(
+        mainDataAxis = figure.add_subplot(
             gs[0]
         )  # Main data axes (matplotLib axis object)
-        ampSliderAxis = self.figure.add_subplot(
+        ampSliderAxis = figure.add_subplot(
             gs[2]
         )  # Amplitude slider for main data (matplotLib axis object)
-        timeSliderAxis = self.figure.add_subplot(
+        timeSliderAxis = figure.add_subplot(
             gs[3]
         )  # Time slider for main data (matplotLib axis object)
-        windowSizeSliderAxis = self.figure.add_subplot(
+        windowSizeSliderAxis = figure.add_subplot(
             gs[4]
         )  # Time slider for main data (matplotLib axis object)
 
@@ -410,23 +400,33 @@ class tracePickingWindow(PickingWindow):
             valstep=0.001,
         )
 
-        # mainDataAxis.set_ylim([self.initTime, self.initTime + self.initWindowSize])
-        # mainDataAxis.set_xlim([-self.initAmp, self.initAmp])
-        # mainDataAxis.invert_yaxis()
-        # mainDataAxis.set_xlabel("Normalized Amplitude")
-        # mainDataAxis.set_ylabel("Time (s)")
+        return mainDataAxis
+
+    def setUpFigLayout(self):
+        """
+        This will set up the main window layout.
+        INPUTS:
+            initAmp = the initial value for the amplitude slider
+            initTime = the intial value for the time slider
+            initWindowSize = the initial value for the window size (time)
+            
+        OUTPUTS:
+            figure = the main figure window (matplotLib Figure object)
+            mainDataAxis = Main data axes (matplotLib axis object)
+            ampSliderAxis = Amplitude slider for main data (matplotLib axis object)
+            timeSliderAxis = Time slider for main data (matplotLib axis object)
+            windowSizeSliderAxis = Time slider for main data (matplotLib axis object)
+            ampSlider = The amplitude "Slider" Object
+            timeSlider = the time "Slider" object
+            windowSizeSlider = the window size "Slider" object
+        """
+        self.figure = plt.figure(2, dpi=100, figsize=[4, 7])  # Sizes hard-coded...
+        
+        mainDataAxis = self.setUpSliders(self.figure)
 
         self.setAxisLimits(mainDataAxis)
 
         return mainDataAxis
-    
-    def setAxisLimits(self, mainDataAxis):
-        mainDataAxis.set_ylim([self.initTime, self.initTime + self.initWindowSize])
-        mainDataAxis.set_xlim([-self.initAmp, self.initAmp])
-        mainDataAxis.invert_yaxis()
-        mainDataAxis.set_xlabel("Normalized Amplitude")
-        mainDataAxis.set_ylabel("Time (s)")
-
 
 class doPicks:
     def __init__(self, x, t, data, shotLoc, initTraceNumb, pickFileName):

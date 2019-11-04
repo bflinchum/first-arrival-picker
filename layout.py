@@ -17,7 +17,8 @@ class FigurePanel(wx.Panel):
 
         self.figure = Figure()
         self.canvas = FigureCanvas(self, -1, self.figure)
-        self.subplot = self.figure.subplots(1)
+        # self.subplot = self.figure.subplots(1)
+        self.subplot = figure_window.setUpSliders(self.figure)
         figure_window.setAxisLimits(self.subplot)
         figure_window.plot_data(self.subplot)
 
