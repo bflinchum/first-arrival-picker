@@ -160,33 +160,6 @@ class mainPickingWindow(PickingWindow):
     def __init__(self, x, t, data):
         super().__init__(x, t, data)
         
-        # LOCAL FUNCTIONS (NOT METHODS)****************************************
-        # This has to be local because it can only take a single float as input
-        # if I make it a method it requires "self" as an input--which means two
-        # inputs and I get a bunch of errors.
-
-        def updateFigure(updateFloat):
-            # According to documentation "The function must accept a single float as its arguments."
-            cSliderVal = self.ampSlider.val
-            cTimeVal = self.timeSlider.val
-            self.mainDataAxis.clear()
-            self.mainDataAxis.pcolorfast(
-                np.append(x, x[-1] + self.gx),
-                np.append(t, t[-1] + self.dt),
-                data,
-                vmin=-cSliderVal,
-                vmax=cSliderVal,
-                cmap="gray",
-            )
-            self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker=1, s=50, c="c")
-            self.mainDataAxis.set_ylim([0, cTimeVal])
-            self.mainDataAxis.invert_yaxis()
-            self.mainDataAxis.set_xlabel("Distance (m)")
-            self.mainDataAxis.set_ylabel("Time (s)")
-            plt.draw()
-
-        # END LCOAL FUNCTIONS***************************************************
-
         """
         Variables that need to be accesible, I am calling these properties.
         These will need to have the term self in front of the name
@@ -218,10 +191,30 @@ class mainPickingWindow(PickingWindow):
         # ACTIVATE SLIDERS
         # I had to make these properties so that they would self update....
         # I wanted to keep them local but it didn't work.
-        self.ampSlider.on_changed(updateFigure)
-        self.timeSlider.on_changed(updateFigure)
+        self.ampSlider.on_changed(self.updateFigure)
+        self.timeSlider.on_changed(self.updateFigure)
 
         # plt.show() #This has to be the last command.
+    
+    def updateFigure(self, updateFloat):
+        # According to documentation "The function must accept a single float as its arguments."
+        cSliderVal = self.ampSlider.val
+        cTimeVal = self.timeSlider.val
+        self.mainDataAxis.clear()
+        self.mainDataAxis.pcolorfast(
+            np.append(self.x, self.x[-1] + self.gx),
+            np.append(self.t, self.t[-1] + self.dt),
+            self.data,
+            vmin=-cSliderVal,
+            vmax=cSliderVal,
+            cmap="gray",
+        )
+        self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker=1, s=50, c="c")
+        self.mainDataAxis.set_ylim([0, cTimeVal])
+        self.mainDataAxis.invert_yaxis()
+        self.mainDataAxis.set_xlabel("Distance (m)")
+        self.mainDataAxis.set_ylabel("Time (s)")
+        plt.draw()
 
     def plot_data(self, mainDataAxis):
         # Initialization of first plot
@@ -293,35 +286,6 @@ class tracePickingWindow(PickingWindow):
     def __init__(self, x, t, data, shotLoc, traceNum):
         super().__init__(x, t, data)
 
-        # LOCAL FUNCTIONS (NOT METHODS)****************************************
-        # I know this is unconvential but the matplotlib sliders require this.
-        def updateFigure(updateFloat):
-            # According to documentation "The function must accept a single float as its arguments."
-            cSliderVal = self.ampSlider.val
-            cTimeVal = self.timeSlider.val
-            cWindowSize = self.windowSizeSlider.val
-            traceData = data[:, self.traceNum]
-            self.mainDataAxis.clear()
-            self.mainDataAxis.plot(traceData, t, "k")
-            self.mainDataAxis.fill_betweenx(
-                t, 0, traceData, where=traceData < 0, color="k", interpolate=True
-            )
-            self.mainDataAxis.scatter(
-                self.xPicks, self.tPicks, marker="_", s=200, c="r"
-            )
-            # mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
-            #            if not (self.shotLocs == []):
-            #               indShots = np.where(self.shotLocs==shotLoc)
-            #               mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
-            self.mainDataAxis.set_ylim([cTimeVal, cTimeVal + cWindowSize])
-            self.mainDataAxis.set_xlim([-cSliderVal, cSliderVal])
-            self.mainDataAxis.invert_yaxis()
-            self.mainDataAxis.set_xlabel("Distance (m)")
-            self.mainDataAxis.set_ylabel("Time (s)")
-            plt.draw()
-
-        # END LCOAL FUNCTIONS***************************************************
-
         """
         Variables that need to be accesible, I am calling these properties.
         These will need to have the term self in front of the name
@@ -347,9 +311,35 @@ class tracePickingWindow(PickingWindow):
 
         self.plot_data(self.mainDataAxis)
 
-        self.ampSlider.on_changed(updateFigure)
-        self.timeSlider.on_changed(updateFigure)
-        self.windowSizeSlider.on_changed(updateFigure)
+        self.ampSlider.on_changed(self.updateFigure)
+        self.timeSlider.on_changed(self.updateFigure)
+        self.windowSizeSlider.on_changed(self.updateFigure)
+
+    def updateFigure(self, updateFloat):
+        # According to documentation "The function must accept a single float as its arguments."
+        cSliderVal = self.ampSlider.val
+        cTimeVal = self.timeSlider.val
+        cWindowSize = self.windowSizeSlider.val
+        traceData = self.data[:, self.traceNum]
+        self.mainDataAxis.clear()
+        self.mainDataAxis.plot(traceData, self.t, "k")
+        self.mainDataAxis.fill_betweenx(
+            self.t, 0, traceData, where=traceData < 0, color="k", interpolate=True
+        )
+        self.mainDataAxis.scatter(
+            self.xPicks, self.tPicks, marker="_", s=200, c="r"
+        )
+        # mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
+        #            if not (self.shotLocs == []):
+        #               indShots = np.where(self.shotLocs==shotLoc)
+        #               mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
+        self.mainDataAxis.set_ylim([cTimeVal, cTimeVal + cWindowSize])
+        self.mainDataAxis.set_xlim([-cSliderVal, cSliderVal])
+        self.mainDataAxis.invert_yaxis()
+        self.mainDataAxis.set_xlabel("Distance (m)")
+        self.mainDataAxis.set_ylabel("Time (s)")
+        plt.draw()
+
 
     def plot_data(self, mainDataAxis):
         # Initialization of first plot
