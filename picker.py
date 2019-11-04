@@ -148,13 +148,18 @@ def bpData(data, lf, hf, nq, order):
 
 # END OF FUNCTIONS IN __main__**************************************************
 
-# Main Window class must intialize first because it will check if pick file exists
-class mainPickingWindow:
-    def __init__(self, x, t, data, shotLoc):
+class PickingWindow:
+    def __init__(self, x, t, data):
         # Define object-level attributes
         self.x = x
         self.t = t
         self.data = data
+
+# Main Window class must intialize first because it will check if pick file exists
+class mainPickingWindow(PickingWindow):
+    def __init__(self, x, t, data):
+        super().__init__(x, t, data)
+        
         # LOCAL FUNCTIONS (NOT METHODS)****************************************
         # This has to be local because it can only take a single float as input
         # if I make it a method it requires "self" as an input--which means two
@@ -276,12 +281,10 @@ class mainPickingWindow:
         return fig1, mainDataAxis, ampSliderAxis, timeSliderAxis, ampSlider, timeSlider
 
 
-class tracePickingWindow:
+class tracePickingWindow(PickingWindow):
     def __init__(self, x, t, data, shotLoc, traceNum):
-        # Define object-level attributes
-        self.x = x
-        self.t = t
-        self.data = data
+        super().__init__(x, t, data)
+
         # LOCAL FUNCTIONS (NOT METHODS)****************************************
         # I know this is unconvential but the matplotlib sliders require this.
         def updateFigure(updateFloat):
@@ -430,7 +433,7 @@ class doPicks:
         tracePickWindow = tracePickingWindow(
             self.x, self.t, self.data, shotLoc, initTraceNumb
         )
-        mainWindowObject = mainPickingWindow(self.x, self.t, self.data, shotLoc)
+        mainWindowObject = mainPickingWindow(self.x, self.t, self.data)
 
         self.tracePickWindow = tracePickWindow
         self.mainWindowObject = mainWindowObject
