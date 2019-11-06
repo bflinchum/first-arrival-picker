@@ -213,6 +213,15 @@ class PickingWindow:
         self.setAxisLimits(mainDataAxis)
 
         return mainDataAxis
+    
+    def updateFigure(self, updateFloat):
+        """
+        According to documentation:
+        "The function must accept a single float as its arguments."
+        """
+        self.mainDataAxis.clear()
+        self.plot_data(self.mainDataAxis)
+        self.setAxisLimits(self.mainDataAxis)
 
 
 class mainPickingWindow(PickingWindow):
@@ -231,44 +240,21 @@ class mainPickingWindow(PickingWindow):
         self.ampSlider.on_changed(self.updateFigure)
         self.timeSlider.on_changed(self.updateFigure)
 
-    def updateFigure(self, updateFloat):
-        # According to documentation "The function must accept a single float as its arguments."
-        cSliderVal = self.ampSlider.val
-        cTimeVal = self.timeSlider.val
-        self.mainDataAxis.clear()
-        self.mainDataAxis.pcolorfast(
-            np.append(self.x, self.x[-1] + self.gx),
-            np.append(self.t, self.t[-1] + self.dt),
-            self.data,
-            vmin=-cSliderVal,
-            vmax=cSliderVal,
-            cmap="gray",
-        )
-        self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker=1, s=50, c="c")
-        self.mainDataAxis.set_ylim([0, cTimeVal])
-        self.mainDataAxis.invert_yaxis()
-        self.mainDataAxis.set_xlabel("Distance (m)")
-        self.mainDataAxis.set_ylabel("Time (s)")
-        plt.draw()
-
     def plot_data(self, mainDataAxis):
         # Initialization of first plot
         mainDataAxis.pcolorfast(
             np.append(self.x, self.x[-1] + self.gx),
             np.append(self.t, self.t[-1] + self.dt),
             self.data,
-            vmin=-self.initAmp,
-            vmax=self.initAmp,
+            vmin=-self.ampSlider.val,
+            vmax=self.ampSlider.val,
             cmap="gray",
         )
-        #        if not (self.shotLocs == []):
-        #           indShots = np.where(self.shotLocs==shotLoc)
-        #           self.mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
+        mainDataAxis.scatter(self.xPicks, self.tPicks, marker=1, s=50, c="c")
 
     def setAxisLimits(self, mainDataAxis):
         super().setAxisLimits(mainDataAxis)
-        mainDataAxis.set_ylim([0, self.initAmp])
-        mainDataAxis.set_ylim([0, self.initTime])
+        mainDataAxis.set_ylim([0, self.timeSlider.val])
         mainDataAxis.set_xlabel("Channel")
         mainDataAxis.set_ylabel("Time (s)")
 
@@ -302,7 +288,6 @@ class tracePickingWindow(PickingWindow):
         # UNIQUE PROPERTIES*****************************************************
         self.traceNum = traceNum
         self.initWindowSize = 0.1  # Intial values for window size slider
-        self.traceData = data[:, self.traceNum]
 
         super().__init__(x, t, data, figure)
 
@@ -311,28 +296,10 @@ class tracePickingWindow(PickingWindow):
         self.timeSlider.on_changed(self.updateFigure)
         self.windowSizeSlider.on_changed(self.updateFigure)
 
-    def updateFigure(self, updateFloat):
-        # According to documentation "The function must accept a single float as its arguments."
-        cSliderVal = self.ampSlider.val
-        cTimeVal = self.timeSlider.val
-        cWindowSize = self.windowSizeSlider.val
-        traceData = self.data[:, self.traceNum]
-        self.mainDataAxis.clear()
-        self.mainDataAxis.plot(traceData, self.t, "k")
-        self.mainDataAxis.fill_betweenx(
-            self.t, 0, traceData, where=traceData < 0, color="k", interpolate=True
-        )
-        self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker="_", s=200, c="r")
-        # mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
-        #            if not (self.shotLocs == []):
-        #               indShots = np.where(self.shotLocs==shotLoc)
-        #               mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
-        self.mainDataAxis.set_ylim([cTimeVal, cTimeVal + cWindowSize])
-        self.mainDataAxis.set_xlim([-cSliderVal, cSliderVal])
-        self.mainDataAxis.invert_yaxis()
-        self.mainDataAxis.set_xlabel("Distance (m)")
-        self.mainDataAxis.set_ylabel("Time (s)")
-        plt.draw()
+    @property
+    def traceData(self):
+        return self.data[:, self.traceNum]
+
 
     def plot_data(self, mainDataAxis):
         # Initialization of first plot
@@ -343,14 +310,18 @@ class tracePickingWindow(PickingWindow):
             self.traceData,
             where=self.traceData < 0,
             color="k",
-            interpolate=True,
+            interpolate=True
         )
+        mainDataAxis.scatter(self.xPicks, self.tPicks, marker="_", s=200, c="r")
+        
 
     def setAxisLimits(self, mainDataAxis):
         super().setAxisLimits(mainDataAxis)
-        mainDataAxis.set_ylim([self.initTime, self.initTime + self.initWindowSize])
-        mainDataAxis.set_xlim([-self.initAmp, self.initAmp])
-        mainDataAxis.set_xlabel("Normalized Amplitude")
+        mainDataAxis.set_ylim(
+            [self.timeSlider.val, self.timeSlider.val + self.windowSizeSlider.val]
+        )
+        mainDataAxis.set_xlim([-self.ampSlider.val, self.ampSlider.val])
+        mainDataAxis.set_xlabel("Distance (m)")
         mainDataAxis.set_ylabel("Time (s)")
 
     def setUpSliders(self, figure):
