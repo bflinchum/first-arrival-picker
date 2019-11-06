@@ -181,6 +181,15 @@ class PickingWindow:
         # Plot Data
         self.plot_data(self.mainDataAxis)
 
+    def plot_data(self, mainDataAxis):
+        pass
+
+    def setAxisLimits(self, mainDataAxis):
+        mainDataAxis.invert_yaxis()
+
+    def setUpSliders(self, figure):
+        return figure.subplots(1)
+
     def setUpFigLayout(self):
         """
         This will set up the main window layout.
@@ -257,9 +266,9 @@ class mainPickingWindow(PickingWindow):
         #           self.mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
 
     def setAxisLimits(self, mainDataAxis):
+        super().setAxisLimits(mainDataAxis)
         mainDataAxis.set_ylim([0, self.initAmp])
         mainDataAxis.set_ylim([0, self.initTime])
-        mainDataAxis.invert_yaxis()
         mainDataAxis.set_xlabel("Channel")
         mainDataAxis.set_ylabel("Time (s)")
 
@@ -338,9 +347,9 @@ class tracePickingWindow(PickingWindow):
         )
 
     def setAxisLimits(self, mainDataAxis):
+        super().setAxisLimits(mainDataAxis)
         mainDataAxis.set_ylim([self.initTime, self.initTime + self.initWindowSize])
         mainDataAxis.set_xlim([-self.initAmp, self.initAmp])
-        mainDataAxis.invert_yaxis()
         mainDataAxis.set_xlabel("Normalized Amplitude")
         mainDataAxis.set_ylabel("Time (s)")
 
