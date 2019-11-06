@@ -1,6 +1,7 @@
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx as NavigationToolbar
 from matplotlib.figure import Figure
+
 # import matplotlib.pyplot as plt
 
 import numpy as np
@@ -73,7 +74,8 @@ class MiddleSection(wx.BoxSizer):
         # Top
         topsizer = wx.BoxSizer(wx.VERTICAL)
         topsizer.Add(
-            FigurePanel(panel, figure_window), wx.SizerFlags(1).Shaped().Border(wx.BOTTOM)
+            FigurePanel(panel, figure_window),
+            wx.SizerFlags(1).Shaped().Border(wx.BOTTOM),
         )
 
         # Bottom
@@ -116,9 +118,7 @@ class MainFrame(wx.Frame):
         leftsection = LeftSection(panel)
 
         ### MIDDLE SECTION ###
-        middlesection = MiddleSection(
-            panel, self.picker.c.mainWindowObject
-        )
+        middlesection = MiddleSection(panel, self.picker.c.mainWindowObject)
 
         ### RIGHT SECTION ###
         rightsection = RightSection(panel, self.picker.c.tracePickWindow)

@@ -148,6 +148,7 @@ def bpData(data, lf, hf, nq, order):
 
 # END OF FUNCTIONS IN __main__**************************************************
 
+
 class PickingWindow:
     def __init__(self, x, t, data, figure):
         # Define object-level attributes
@@ -156,11 +157,12 @@ class PickingWindow:
         self.data = data
         self.figure = figure
 
+
 # Main Window class must intialize first because it will check if pick file exists
 class mainPickingWindow(PickingWindow):
     def __init__(self, x, t, data, figure):
         super().__init__(x, t, data, figure)
-        
+
         """
         Variables that need to be accesible, I am calling these properties.
         These will need to have the term self in front of the name
@@ -196,7 +198,7 @@ class mainPickingWindow(PickingWindow):
         self.timeSlider.on_changed(self.updateFigure)
 
         # plt.show() #This has to be the last command.
-    
+
     def updateFigure(self, updateFloat):
         # According to documentation "The function must accept a single float as its arguments."
         cSliderVal = self.ampSlider.val
@@ -325,9 +327,7 @@ class tracePickingWindow(PickingWindow):
         self.mainDataAxis.fill_betweenx(
             self.t, 0, traceData, where=traceData < 0, color="k", interpolate=True
         )
-        self.mainDataAxis.scatter(
-            self.xPicks, self.tPicks, marker="_", s=200, c="r"
-        )
+        self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker="_", s=200, c="r")
         # mainDataAxis.pcolorfast(np.append(x,x[-1]+gx),np.append(t,t[-1]+dt),data,vmin=-cSliderVal,vmax=cSliderVal ,cmap='gray')
         #            if not (self.shotLocs == []):
         #               indShots = np.where(self.shotLocs==shotLoc)
@@ -339,12 +339,16 @@ class tracePickingWindow(PickingWindow):
         self.mainDataAxis.set_ylabel("Time (s)")
         plt.draw()
 
-
     def plot_data(self, mainDataAxis):
         # Initialization of first plot
         mainDataAxis.plot(self.traceData, self.t, "k")
         mainDataAxis.fill_betweenx(
-            self.t, 0, self.traceData, where=self.traceData < 0, color="k", interpolate=True
+            self.t,
+            0,
+            self.traceData,
+            where=self.traceData < 0,
+            color="k",
+            interpolate=True,
         )
 
     def setAxisLimits(self, mainDataAxis):
@@ -353,7 +357,7 @@ class tracePickingWindow(PickingWindow):
         mainDataAxis.invert_yaxis()
         mainDataAxis.set_xlabel("Normalized Amplitude")
         mainDataAxis.set_ylabel("Time (s)")
-    
+
     def setUpSliders(self, figure):
         gs = gridspec.GridSpec(5, 1, height_ratios=[5, 0.5, 0.25, 0.25, 0.25])
         mainDataAxis = figure.add_subplot(
@@ -415,6 +419,7 @@ class tracePickingWindow(PickingWindow):
 
         return mainDataAxis
 
+
 class doPicks:
     def __init__(self, x, t, data, shotLoc, initTraceNumb, pickFileName):
         # Define object-level attributes
@@ -427,7 +432,7 @@ class doPicks:
             self.x,
             self.t,
             self.data,
-            plt.figure(2, dpi=100, figsize=[4, 7]), # Sizes hard-coded...
+            plt.figure(2, dpi=100, figsize=[4, 7]),  # Sizes hard-coded...
             shotLoc,
             initTraceNumb,
         )
@@ -435,7 +440,7 @@ class doPicks:
             self.x,
             self.t,
             self.data,
-            plt.figure(1, dpi=100, figsize=[8, 7]) # Sizes hard-coded...
+            plt.figure(1, dpi=100, figsize=[8, 7]),  # Sizes hard-coded...
         )
 
         self.tracePickWindow = tracePickWindow
