@@ -98,7 +98,6 @@ def getData(fileType, file):
     gx = reciever spacing (calcualted from header) in m
     shotLoc = Shot Location in m
     """
-
     if str(fileType).lower() == "segy":
         with segyio.open(file, strict=False) as f:
             t = f.samples / 1000
@@ -150,54 +149,54 @@ def bpData(data, lf, hf, nq, order):
 
 
 class PickingWindow:
-    def __init__(self, x, t, data, figure):
-        # Define object-level attributes
+    """ Parent window class. Contains all common functionality """
+
+    def __init__(self, x, t, data, figure, initAmp=0.5, initTime=0):
+        """
+        Constructor for PickingMethod
+        Variables that need to be accesible, I am calling these properties.
+        These will need to have the term self in front of the name
+        shotLocs = list of shot locations
+        xPicks = list of x-picks at each shot location
+        tPicks = list of t-picks at each shot location
+        
+        Functions that need to be accesible, these are methods:
+        """
+        # Data properties
         self.x = x
         self.t = t
         self.data = data
         self.figure = figure
 
+        # Intial values for sliders
+        self.initAmp = initAmp
+        self.initTime = initTime
 
-# Main Window class must intialize first because it will check if pick file exists
-class mainPickingWindow(PickingWindow):
-    def __init__(self, x, t, data, figure):
-        super().__init__(x, t, data, figure)
-
-        """
-        Variables that need to be accesible, I am calling these properties.
-        These will need to have the term self in front of the name
-        shotLocs = list of shot locations
-        xPicks = list of x-picks at each shot location
-        tPicks = list of t-picks at each shot location        
-        
-        Functions that need to be accesible, these are methods:
-        """
-
-        # LOCAL VARIABLES*******************************************************
-        # Calculate dt and gx (gx = geophone spacing in m)
-        self.dt = np.round(np.diff(t)[0], decimals=4)
-        self.gx = np.round(np.diff(x)[0], decimals=1)
         self.xPicks = []
         self.tPicks = []
-
-        # Intial values for sliders
-        self.initAmp = 0.5
-        self.initTime = 0.75
-
-        # END LOCAL VARIABLES***************************************************
 
         # Set up the figure
         self.mainDataAxis = self.setUpFigLayout()
 
+        # Plot Data
         self.plot_data(self.mainDataAxis)
 
+
+class mainPickingWindow(PickingWindow):
+    """ Class for the main window. Inherits from Picking Window """
+
+    def __init__(self, x, t, data, figure):
+        """ Constructor """
+        # UNIQUE PROPERTIES*****************************************************
+        # Calculate dt and gx (gx = geophone spacing in m)
+        self.dt = np.round(np.diff(t)[0], decimals=4)
+        self.gx = np.round(np.diff(x)[0], decimals=1)
+
+        super().__init__(x, t, data, figure, initTime=0.75)
+
         # ACTIVATE SLIDERS
-        # I had to make these properties so that they would self update....
-        # I wanted to keep them local but it didn't work.
         self.ampSlider.on_changed(self.updateFigure)
         self.timeSlider.on_changed(self.updateFigure)
-
-        # plt.show() #This has to be the last command.
 
     def updateFigure(self, updateFloat):
         # According to documentation "The function must accept a single float as its arguments."
@@ -284,34 +283,18 @@ class mainPickingWindow(PickingWindow):
 
 
 class tracePickingWindow(PickingWindow):
+    """ Class for the trace picking window. Inherits from Picking Window """
+
     def __init__(self, x, t, data, figure, shotLoc, traceNum):
+        """ Constructor """
+        # UNIQUE PROPERTIES*****************************************************
+        self.traceNum = traceNum
+        self.initWindowSize = 0.1  # Intial values for window size slider
+        self.traceData = data[:, self.traceNum]
+
         super().__init__(x, t, data, figure)
 
-        """
-        Variables that need to be accesible, I am calling these properties.
-        These will need to have the term self in front of the name
-        shotLocs = list of shot locations
-        xPicks = list of x-picks at each shot location
-        tPicks = list of t-picks at each shot location        
-        
-        Functions that need to be accesible, these are methods:
-        """
-        self.traceNum = traceNum
-        self.xPicks = []
-        self.tPicks = []
-        # LOCAL VARIABLES*******************************************************
-        # Calculate dt and gx (gx = geophone spacing in m)
-        self.traceData = data[:, self.traceNum]
-        # Intial values for sliders
-        self.initAmp = 0.5
-        self.initTime = 0
-        self.initWindowSize = 0.1
-        # END LOCAL VARIABLES***************************************************
-
-        self.mainDataAxis = self.setUpFigLayout()
-
-        self.plot_data(self.mainDataAxis)
-
+        # ACTIVATE SLIDERS
         self.ampSlider.on_changed(self.updateFigure)
         self.timeSlider.on_changed(self.updateFigure)
         self.windowSizeSlider.on_changed(self.updateFigure)
