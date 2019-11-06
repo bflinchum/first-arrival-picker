@@ -149,16 +149,17 @@ def bpData(data, lf, hf, nq, order):
 # END OF FUNCTIONS IN __main__**************************************************
 
 class PickingWindow:
-    def __init__(self, x, t, data):
+    def __init__(self, x, t, data, figure):
         # Define object-level attributes
         self.x = x
         self.t = t
         self.data = data
+        self.figure = figure
 
 # Main Window class must intialize first because it will check if pick file exists
 class mainPickingWindow(PickingWindow):
-    def __init__(self, x, t, data):
-        super().__init__(x, t, data)
+    def __init__(self, x, t, data, figure):
+        super().__init__(x, t, data, figure)
         
         """
         Variables that need to be accesible, I am calling these properties.
@@ -273,8 +274,6 @@ class mainPickingWindow(PickingWindow):
             ampSlider = The amplitude "Slider" Object
             timeSlider = the time "Slider" object
         """
-        self.figure = plt.figure(1, dpi=100, figsize=[8, 7])  # Sizes hard-coded...
-
         mainDataAxis = self.setUpSliders(self.figure)
 
         self.setAxisLimits(mainDataAxis)
@@ -283,8 +282,8 @@ class mainPickingWindow(PickingWindow):
 
 
 class tracePickingWindow(PickingWindow):
-    def __init__(self, x, t, data, shotLoc, traceNum):
-        super().__init__(x, t, data)
+    def __init__(self, x, t, data, figure, shotLoc, traceNum):
+        super().__init__(x, t, data, figure)
 
         """
         Variables that need to be accesible, I am calling these properties.
@@ -410,8 +409,6 @@ class tracePickingWindow(PickingWindow):
             timeSlider = the time "Slider" object
             windowSizeSlider = the window size "Slider" object
         """
-        self.figure = plt.figure(2, dpi=100, figsize=[4, 7])  # Sizes hard-coded...
-        
         mainDataAxis = self.setUpSliders(self.figure)
 
         self.setAxisLimits(mainDataAxis)
@@ -427,9 +424,19 @@ class doPicks:
 
         # Create both windows with initalized values
         tracePickWindow = tracePickingWindow(
-            self.x, self.t, self.data, shotLoc, initTraceNumb
+            self.x,
+            self.t,
+            self.data,
+            plt.figure(2, dpi=100, figsize=[4, 7]), # Sizes hard-coded...
+            shotLoc,
+            initTraceNumb,
         )
-        mainWindowObject = mainPickingWindow(self.x, self.t, self.data)
+        mainWindowObject = mainPickingWindow(
+            self.x,
+            self.t,
+            self.data,
+            plt.figure(1, dpi=100, figsize=[8, 7]) # Sizes hard-coded...
+        )
 
         self.tracePickWindow = tracePickWindow
         self.mainWindowObject = mainWindowObject
