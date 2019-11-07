@@ -23,6 +23,7 @@ class FigurePanel(wx.Panel):
         figure_window.figure = self.figure
         figure_window.setUpFigLayout()
         figure_window.plot_data()
+        figure_window.activate_sliders()
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.canvas, wx.SizerFlags(1).Left().Top().Shaped())

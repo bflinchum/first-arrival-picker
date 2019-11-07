@@ -181,6 +181,13 @@ class PickingWindow:
         # Plot Data
         self.plot_data()
 
+        # ACTIVATE SLIDERS
+        self.activate_sliders()
+
+    def activate_sliders(self):
+        self.ampSlider.on_changed(self.updateFigure)
+        self.timeSlider.on_changed(self.updateFigure)
+
     def plot_data(self):
         pass
 
@@ -231,14 +238,11 @@ class mainPickingWindow(PickingWindow):
         self.dt = np.round(np.diff(t)[0], decimals=4)
         self.gx = np.round(np.diff(x)[0], decimals=1)
 
+        # Run parent class initialisation
         super().__init__(x, t, data, figure, initTime=0.75)
 
-        # ACTIVATE SLIDERS
-        self.ampSlider.on_changed(self.updateFigure)
-        self.timeSlider.on_changed(self.updateFigure)
-
     def plot_data(self):
-        # Initialization of first plot
+        """ Plot the data """
         self.mainDataAxis.pcolorfast(
             np.append(self.x, self.x[-1] + self.gx),
             np.append(self.t, self.t[-1] + self.dt),
@@ -286,9 +290,8 @@ class tracePickingWindow(PickingWindow):
 
         super().__init__(x, t, data, figure)
 
-        # ACTIVATE SLIDERS
-        self.ampSlider.on_changed(self.updateFigure)
-        self.timeSlider.on_changed(self.updateFigure)
+    def activate_sliders(self):
+        super().activate_sliders()
         self.windowSizeSlider.on_changed(self.updateFigure)
 
     @property
