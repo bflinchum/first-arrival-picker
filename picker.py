@@ -176,19 +176,19 @@ class PickingWindow:
         self.tPicks = []
 
         # Set up the figure
-        self.mainDataAxis = self.setUpFigLayout()
+        self.setUpFigLayout()
 
         # Plot Data
-        self.plot_data(self.mainDataAxis)
+        self.plot_data()
 
-    def plot_data(self, mainDataAxis):
+    def plot_data(self):
         pass
 
-    def setAxisLimits(self, mainDataAxis):
-        mainDataAxis.invert_yaxis()
+    def setAxisLimits(self):
+        self.mainDataAxis.invert_yaxis()
 
-    def setUpSliders(self, figure):
-        return figure.subplots(1)
+    def setUpSliders(self):
+        self.mainDataAxis = self.figure.subplots(1)
 
     def setUpFigLayout(self):
         """
@@ -208,11 +208,8 @@ class PickingWindow:
             timeSlider = the time "Slider" object
             windowSizeSlider = the window size "Slider" object
         """
-        mainDataAxis = self.setUpSliders(self.figure)
-
-        self.setAxisLimits(mainDataAxis)
-
-        return mainDataAxis
+        self.setUpSliders()
+        self.setAxisLimits()
     
     def updateFigure(self, updateFloat):
         """
@@ -220,8 +217,8 @@ class PickingWindow:
         "The function must accept a single float as its arguments."
         """
         self.mainDataAxis.clear()
-        self.plot_data(self.mainDataAxis)
-        self.setAxisLimits(self.mainDataAxis)
+        self.plot_data()
+        self.setAxisLimits()
 
 
 class mainPickingWindow(PickingWindow):
@@ -240,9 +237,9 @@ class mainPickingWindow(PickingWindow):
         self.ampSlider.on_changed(self.updateFigure)
         self.timeSlider.on_changed(self.updateFigure)
 
-    def plot_data(self, mainDataAxis):
+    def plot_data(self):
         # Initialization of first plot
-        mainDataAxis.pcolorfast(
+        self.mainDataAxis.pcolorfast(
             np.append(self.x, self.x[-1] + self.gx),
             np.append(self.t, self.t[-1] + self.dt),
             self.data,
@@ -250,23 +247,23 @@ class mainPickingWindow(PickingWindow):
             vmax=self.ampSlider.val,
             cmap="gray",
         )
-        mainDataAxis.scatter(self.xPicks, self.tPicks, marker=1, s=50, c="c")
+        self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker=1, s=50, c="c")
 
-    def setAxisLimits(self, mainDataAxis):
-        super().setAxisLimits(mainDataAxis)
-        mainDataAxis.set_ylim([0, self.timeSlider.val])
-        mainDataAxis.set_xlabel("Channel")
-        mainDataAxis.set_ylabel("Time (s)")
+    def setAxisLimits(self):
+        super().setAxisLimits()
+        self.mainDataAxis.set_ylim([0, self.timeSlider.val])
+        self.mainDataAxis.set_xlabel("Channel")
+        self.mainDataAxis.set_ylabel("Time (s)")
 
-    def setUpSliders(self, figure):
+    def setUpSliders(self):
         gs = gridspec.GridSpec(5, 1, height_ratios=[5, 0.5, 0.25, 0.25, 0.25])
-        mainDataAxis = figure.add_subplot(
+        self.mainDataAxis = self.figure.add_subplot(
             gs[0]
         )  # Main data axes (matplotLib axis object)
-        ampSliderAxis = figure.add_subplot(
+        ampSliderAxis = self.figure.add_subplot(
             gs[2]
         )  # Amplitude slider for main data (matplotLib axis object)
-        timeSliderAxis = figure.add_subplot(
+        timeSliderAxis = self.figure.add_subplot(
             gs[3]
         )  # Time slider for main data (matplotLib axis object)
 
@@ -276,8 +273,6 @@ class mainPickingWindow(PickingWindow):
         self.timeSlider = Slider(
             timeSliderAxis, "Max Time", 0, 1, valinit=self.initTime, valstep=0.05
         )
-
-        return mainDataAxis
 
 
 class tracePickingWindow(PickingWindow):
@@ -298,13 +293,14 @@ class tracePickingWindow(PickingWindow):
 
     @property
     def traceData(self):
+        """ Dynamically updates its value when traceNum is changed """
         return self.data[:, self.traceNum]
 
 
-    def plot_data(self, mainDataAxis):
+    def plot_data(self):
         # Initialization of first plot
-        mainDataAxis.plot(self.traceData, self.t, "k")
-        mainDataAxis.fill_betweenx(
+        self.mainDataAxis.plot(self.traceData, self.t, "k")
+        self.mainDataAxis.fill_betweenx(
             self.t,
             0,
             self.traceData,
@@ -312,30 +308,30 @@ class tracePickingWindow(PickingWindow):
             color="k",
             interpolate=True
         )
-        mainDataAxis.scatter(self.xPicks, self.tPicks, marker="_", s=200, c="r")
+        self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker="_", s=200, c="r")
         
 
-    def setAxisLimits(self, mainDataAxis):
-        super().setAxisLimits(mainDataAxis)
-        mainDataAxis.set_ylim(
+    def setAxisLimits(self):
+        super().setAxisLimits()
+        self.mainDataAxis.set_ylim(
             [self.timeSlider.val, self.timeSlider.val + self.windowSizeSlider.val]
         )
-        mainDataAxis.set_xlim([-self.ampSlider.val, self.ampSlider.val])
-        mainDataAxis.set_xlabel("Distance (m)")
-        mainDataAxis.set_ylabel("Time (s)")
+        self.mainDataAxis.set_xlim([-self.ampSlider.val, self.ampSlider.val])
+        self.mainDataAxis.set_xlabel("Distance (m)")
+        self.mainDataAxis.set_ylabel("Time (s)")
 
-    def setUpSliders(self, figure):
+    def setUpSliders(self):
         gs = gridspec.GridSpec(5, 1, height_ratios=[5, 0.5, 0.25, 0.25, 0.25])
-        mainDataAxis = figure.add_subplot(
+        self.mainDataAxis = self.figure.add_subplot(
             gs[0]
         )  # Main data axes (matplotLib axis object)
-        ampSliderAxis = figure.add_subplot(
+        ampSliderAxis = self.figure.add_subplot(
             gs[2]
         )  # Amplitude slider for main data (matplotLib axis object)
-        timeSliderAxis = figure.add_subplot(
+        timeSliderAxis = self.figure.add_subplot(
             gs[3]
         )  # Time slider for main data (matplotLib axis object)
-        windowSizeSliderAxis = figure.add_subplot(
+        windowSizeSliderAxis = self.figure.add_subplot(
             gs[4]
         )  # Time slider for main data (matplotLib axis object)
 
@@ -358,8 +354,6 @@ class tracePickingWindow(PickingWindow):
             valinit=self.initWindowSize,
             valstep=0.001,
         )
-
-        return mainDataAxis
 
 
 class doPicks:
@@ -667,6 +661,14 @@ class picker:
         data = normalizeTraces(data)
 
         self.c = doPicks(x, t, data, shotLoc, 10, pickFile)
+        # tracePickingWindow(
+        #     x,
+        #     t,
+        #     data,
+        #     plt.figure(2, dpi=100, figsize=[4, 7]),  # Sizes hard-coded...
+        #     shotLoc,
+        #     10,
+        # )
 
 
 if __name__ == "__main__":

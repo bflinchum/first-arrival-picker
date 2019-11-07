@@ -19,9 +19,10 @@ class FigurePanel(wx.Panel):
         self.figure = Figure()
         self.canvas = FigureCanvas(self, -1, self.figure)
         # self.subplot = self.figure.subplots(1)
-        self.subplot = figure_window.setUpSliders(self.figure)
-        figure_window.setAxisLimits(self.subplot)
-        figure_window.plot_data(self.subplot)
+
+        figure_window.figure = self.figure
+        figure_window.setUpFigLayout()
+        figure_window.plot_data()
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.canvas, wx.SizerFlags(1).Left().Top().Shaped())
