@@ -109,6 +109,7 @@ class MainFrame(wx.Frame):
 
         self.picker = picker()
         self.gui_layout()
+        self.picker.c.connect()
 
         self.Centre()
         self.Show()
