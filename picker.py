@@ -250,8 +250,8 @@ class mainPickingWindow(PickingWindow):
         self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker=1, s=50, c="c")
 
     def setAxisLimits(self):
-        super().setAxisLimits()
         self.mainDataAxis.set_ylim([0, self.timeSlider.val])
+        super().setAxisLimits()
         self.mainDataAxis.set_xlabel("Channel")
         self.mainDataAxis.set_ylabel("Time (s)")
 
@@ -312,11 +312,11 @@ class tracePickingWindow(PickingWindow):
         
 
     def setAxisLimits(self):
-        super().setAxisLimits()
         self.mainDataAxis.set_ylim(
             [self.timeSlider.val, self.timeSlider.val + self.windowSizeSlider.val]
         )
         self.mainDataAxis.set_xlim([-self.ampSlider.val, self.ampSlider.val])
+        super().setAxisLimits()
         self.mainDataAxis.set_xlabel("Distance (m)")
         self.mainDataAxis.set_ylabel("Time (s)")
 
