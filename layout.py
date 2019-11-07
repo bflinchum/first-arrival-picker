@@ -1,6 +1,8 @@
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx as NavigationToolbar
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+
+# import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -11,10 +13,17 @@ from picker import picker
 
 ###### Example for displaying a MatPlotLib Figure! ######
 class FigurePanel(wx.Panel):
-    def __init__(self, parent, figure):
+    def __init__(self, parent, figure_window):
         super().__init__(parent)
 
-        self.canvas = FigureCanvas(self, -1, figure)
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self, -1, self.figure)
+        # self.subplot = self.figure.subplots(1)
+
+        figure_window.figure = self.figure
+        figure_window.setUpFigLayout()
+        figure_window.plot_data()
+        figure_window.activate_sliders()
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.canvas, wx.SizerFlags(1).Left().Top().Shaped())
@@ -61,13 +70,14 @@ class LeftSection(wx.BoxSizer):
 
 
 class MiddleSection(wx.BoxSizer):
-    def __init__(self, panel, figure):
+    def __init__(self, panel, figure_window):
         super().__init__(wx.VERTICAL)
 
         # Top
         topsizer = wx.BoxSizer(wx.VERTICAL)
         topsizer.Add(
-            FigurePanel(panel, figure), wx.SizerFlags(1).Shaped().Border(wx.BOTTOM)
+            FigurePanel(panel, figure_window),
+            wx.SizerFlags(1).Shaped().Border(wx.BOTTOM),
         )
 
         # Bottom
@@ -86,9 +96,9 @@ class MiddleSection(wx.BoxSizer):
 
 
 class RightSection(wx.BoxSizer):
-    def __init__(self, panel, figure):
+    def __init__(self, panel, figure_window):
         super().__init__(wx.VERTICAL)
-        self.Add(FigurePanel(panel, figure), wx.SizerFlags(1).Shaped())
+        self.Add(FigurePanel(panel, figure_window), wx.SizerFlags(1).Shaped())
 
 
 class MainFrame(wx.Frame):
@@ -99,6 +109,7 @@ class MainFrame(wx.Frame):
 
         self.picker = picker()
         self.gui_layout()
+        self.picker.c.connect()
 
         self.Centre()
         self.Show()
@@ -110,12 +121,10 @@ class MainFrame(wx.Frame):
         leftsection = LeftSection(panel)
 
         ### MIDDLE SECTION ###
-        middlesection = MiddleSection(
-            panel, self.picker.c.mainWindowObject.figureObject
-        )
+        middlesection = MiddleSection(panel, self.picker.c.mainWindowObject)
 
         ### RIGHT SECTION ###
-        rightsection = RightSection(panel, self.picker.c.tracePickWindow.figureObject)
+        rightsection = RightSection(panel, self.picker.c.tracePickWindow)
 
         ### Add left and right sections to the main sizer
         mainsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -128,18 +137,35 @@ class MainFrame(wx.Frame):
         self.SetSizeHints(self.Size)
 
     def menubar(self):
-        menuBar = wx.MenuBar()
+        # Define Menu Bar
+        menu_bar = wx.MenuBar()
 
-        fileButton = wx.Menu()
-        viewButton = wx.Menu()
+        #### File
+        file_menu = wx.Menu()
 
-        exitItem = fileButton.Append(wx.ID_EXIT, "Exit", "status msg...")
+        # Open
+        open_submenu = wx.Menu()
+        datafile_item = open_submenu.Append(wx.ID_ANY, "Data File")
+        file_menu.AppendSubMenu(open_submenu, "Open")
 
-        menuBar.Append(fileButton, "&File")
-        menuBar.Append(viewButton, "View")
+        # Quit
+        exit_button = file_menu.Append(wx.ID_EXIT, "Quit\tCtrl+q", "Quit the app")
+        self.Bind(wx.EVT_MENU, self.quit, exit_button)
 
-        self.SetMenuBar(menuBar)
-        self.Bind(wx.EVT_MENU, self.quit, exitItem)
+        #### View
+        view_menu = wx.Menu()
+
+        # Reciprocals
+        reciprocals_submenu = wx.Menu()
+        format_item = reciprocals_submenu.Append(wx.ID_ANY, "Format")
+        view_menu.AppendSubMenu(reciprocals_submenu, "Reciprocals")
+
+        # Append File and View to the Menu Bar
+        menu_bar.Append(file_menu, "&File")
+        menu_bar.Append(view_menu, "View")
+
+        # Set the Menu Bar
+        self.SetMenuBar(menu_bar)
 
     def quit(self, event):
         self.Close()
@@ -147,7 +173,7 @@ class MainFrame(wx.Frame):
 
 class App(wx.App):
     def __init__(self):
-        "Create the main window and insert the custom frame"
+        "Create the main window and insert the MainFrame"
         super().__init__()
         MainFrame(
             None, title="Seismic First Arrival Picker Layout v1", size=(1400, 825)
