@@ -175,6 +175,9 @@ class PickingWindow:
         self.xPicks = []
         self.tPicks = []
 
+        self.xPicks2 = []
+        self.tPicks2 = []
+        
         # Set up the figure
         self.setUpFigLayout()
 
@@ -252,6 +255,7 @@ class mainPickingWindow(PickingWindow):
             cmap="gray",
         )
         self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker=1, s=50, c="c")
+        self.mainDataAxis.scatter(self.xPicks2, self.tPicks2, marker=1, s=50, c="r",alpha=0.5)
 
     def setAxisLimits(self):
         self.mainDataAxis.set_ylim([0, self.timeSlider.val])
@@ -309,8 +313,11 @@ class tracePickingWindow(PickingWindow):
             where=self.traceData < 0,
             color="k",
             interpolate=True,
-        )
+        )   
+            
         self.mainDataAxis.scatter(self.xPicks, self.tPicks, marker="_", s=200, c="r")
+
+        
 
     def setAxisLimits(self):
         self.mainDataAxis.set_ylim(
@@ -358,13 +365,14 @@ class tracePickingWindow(PickingWindow):
 
 
 class doPicks:
-    def __init__(self, x, t, data, shotLoc, initTraceNumb, pickFileName):
+    def __init__(self, x, t, data, shotLoc, initTraceNumb, pickFileName,convSPickFile):
         # Define object-level attributes
         self.x = x
         self.t = t
         self.data = data
         self.shotLoc = shotLoc
         self.pickFileName = pickFileName
+        self.convSPickFile = convSPickFile
 
         # Create both windows with initalized values
         self.tracePickWindow = tracePickingWindow(
@@ -391,8 +399,9 @@ class doPicks:
         self.x0 = self.x[0]
 
         # Plot picks if they exists
-        self.updatePicksMainWindow(self.shotLoc, self.pickFileName)
+        self.updatePicksMainWindow(self.shotLoc, self.pickFileName,self.convSPickFile)
         self.updatePicksTraceWindow(self.shotLoc, self.pickFileName)
+        
 
     def connect(self):
         # Connect the TracePickWindow
@@ -429,7 +438,7 @@ class doPicks:
             ):
                 tPick = event.ydata
                 self.writePick(self.shotLoc, tPick, self.pickFileName)
-                self.updatePicksMainWindow(self.shotLoc, self.pickFileName)
+                self.updatePicksMainWindow(self.shotLoc, self.pickFileName,self.convSPickFile)
                 self.updatePicksTraceWindow(self.shotLoc, self.pickFileName)
                 # print(tPick)
             if (
@@ -439,7 +448,7 @@ class doPicks:
             ):
                 tPick = event.ydata
                 self.deletePick(self.shotLoc, tPick, self.pickFileName)
-                self.updatePicksMainWindow(self.shotLoc, self.pickFileName)
+                self.updatePicksMainWindow(self.shotLoc, self.pickFileName,self.convSPickFile)
                 self.updatePicksTraceWindow(self.shotLoc, self.pickFileName)
 
     def switchTraces(self, event):
@@ -559,7 +568,7 @@ class doPicks:
             tempArr = [c_shotLoc, c_xPick, c_tPick]
             np.savetxt(pickFile, tempArr, fmt="%10.5f")
 
-    def updatePicksMainWindow(self, shotLoc, pickFile):
+    def updatePicksMainWindow(self, shotLoc, pickFile,convSPickFile):
         if os.path.exists(pickFile):
             tempData = np.loadtxt(pickFile)
             shotLocs = tempData[:, 0]
@@ -568,11 +577,28 @@ class doPicks:
             indShots = np.where(shotLocs == shotLoc)
             xPicks = xPicks[indShots]
             tPicks = tPicks[indShots]
+            
         else:
-            xPicks = []
-            tPicks = []
+            xPicks2 = []
+            tPicks2 = []
+            
+            
+        if os.path.exists(convSPickFile):
+            tempData = np.loadtxt(convSPickFile)
+            shotLocs = tempData[:, 0]
+            xPicks2 = tempData[:, 1]
+            tPicks2 = tempData[:, 2]
+            indShots = np.where(shotLocs == shotLoc)
+            xPicks2 = xPicks2[indShots]
+            tPicks2 = tPicks2[indShots]        
+        else:
+            xPicks2 = []
+            tPicks2 = []
+        
         self.mainWindowObject.tPicks = tPicks
         self.mainWindowObject.xPicks = xPicks
+        self.mainWindowObject.tPicks2 = tPicks2
+        self.mainWindowObject.xPicks2 = xPicks2
         cSliderVal = self.mainWindowObject.ampSlider.val
         cTimeVal = self.mainWindowObject.timeSlider.val
         self.mainWindowObject.mainDataAxis.clear()
@@ -585,9 +611,13 @@ class doPicks:
             cmap="gray",
         )
         self.mainWindowObject.mainDataAxis.scatter(
-            xPicks, tPicks, marker=1, s=50, c="c"
+            xPicks2, tPicks2, marker=1, s=50, c='r',alpha=0.5
         )
-        print("made it here")
+        self.mainWindowObject.mainDataAxis.scatter(
+            xPicks, tPicks, marker=1, s=50, c='c'
+        )
+
+        #print("made it here")
         #            if not (self.shotLocs == []):
         #               indShots = np.where(self.shotLocs==shotLoc)
         #               self.mainDataAxis.scatter(self.xPicks[indShots],self.tPicks[indShots],marker=1,s=50,c='c')
@@ -603,15 +633,25 @@ class doPicks:
             shotLocs = tempData[:, 0]
             xPicks = tempData[:, 1]
             tPicks = tempData[:, 2]
+            
+            #Find Recipricals
+            indRepeat = self.findIndRepeat(xPicks,shotLocs,shotLoc,self.x[self.cTrace])
+            if not (indRepeat == -999):
+                tPickRecip = tPicks[indRepeat]
+            #print(indRepeat)
+            
             indShots = np.where(shotLocs == shotLoc)
             xPicks = xPicks[indShots]
             tPicks = tPicks[indShots]
             indTrace = np.where(xPicks == self.x[self.cTrace])
             xPicks = xPicks[indTrace] * 0
             tPicks = tPicks[indTrace]
+            
+
         else:
             xPicks = []
             tPicks = []
+            
         self.tracePickWindow.tPicks = tPicks
         self.tracePickWindow.xPicks = xPicks
         cSliderVal = self.tracePickWindow.ampSlider.val
@@ -625,8 +665,13 @@ class doPicks:
             self.t, 0, traceData, where=traceData < 0, color="k", interpolate=True
         )
         self.tracePickWindow.mainDataAxis.scatter(
-            xPicks, tPicks, marker="_", s=200, c="r"
+            xPicks, tPicks, marker="_", s=200, c='c'
         )
+        
+        if not (indRepeat == -999):
+            self.tracePickWindow.mainDataAxis.scatter(0,tPickRecip,marker='P',s=100,c='m') 
+         
+                
         self.tracePickWindow.mainDataAxis.set_ylim([cTimeVal, cTimeVal + cWindowSize])
         self.tracePickWindow.mainDataAxis.set_xlim([-cSliderVal, cSliderVal])
         self.tracePickWindow.mainDataAxis.invert_yaxis()
@@ -638,38 +683,45 @@ class doPicks:
 class picker:
     def __init__(self):
         applyBPFilt = True
-        # applyBPFilt = False
+        applyBPFilt = False
         lf = 10
-        hf = 120
-        nq = 500  # Nyquist Frequency
+        hf = 150
+        nq = 2000  # Nyquist Frequency
         order = 4
-        pickFile = "test.txt"
-        picks = np.loadtxt(pickFile)
+        pickFile = "CEF_2021_0315_Swave_picks_after_allShots.txt"
+        convSPickFile = '/Users/bflinch/Dropbox/Clemson/Research/ResearchProjects/SwaveRefraction/Time-Lapse_CEF/ExtractMatchingPicks/After_allShots/CEF_2021_0315_Swave_picks_after_allShots_Swave_modeledTravelTimes.txt'
+        #pickFile = '/Users/bflinch/Desktop/test.txt'
         # Add function to check for duplicates
-
-        suFile = "dataFiles/shot_01068m_stacked.su"
 
         # * HARD CODED FOR NOW. We will need to click and open a browser to select
         # This Path
-        dirName = "./dataFiles/survey1"
-        shotLoc = 918
+        #dirName = "/Users/bflinch/Dropbox/Clemson/Research/ResearchProjects/SwaveRefraction/BW_072613/StackFiles/segyFiles/stacked"
+        #dirName = "/Users/bflinch/Dropbox/Clemson/Research/ResearchProjects/SwaveRefraction/BW_072613/Vertical/segyFiles"
+        #dirName = "/Users/bflinch/Dropbox/Clemson/Teaching/Spring2021/GEOL3700_CriticalZoneGeophysics/Data/Day1/Seismic/segyFiles/P-Wave"
+        dirName = "/Users/bflinch/Dropbox/Clemson/Teaching/Spring2021/GEOL3700_CriticalZoneGeophysics/Data/Day2/Seismic/segyFiles/S-Wave/stacked"
+        #dirName = '/Users/bflinch/Dropbox/Clemson/Research/ResearchProjects/FlatwoodSchool_terry/Seismic/P-waves/stacked/'    
+        #dirName = '/Users/bflinch/Dropbox/Clemson/Research/ResearchProjects/FlatwoodSchool_terry/Seismic/S-waves/stacked/'
+        shotLoc = 100
         fileInfo = getFileInfo(dirName)
-
+        print(fileInfo)
+        
         # Hard coded logic to search for shot value (shoult this be exact or appox?)
         tmpShotLocs = np.zeros((len(fileInfo), 1))
         for k in range(0, len(fileInfo)):
             tmpShotLocs[k] = fileInfo[k][1]
         ind = np.argmin(((tmpShotLocs - shotLoc) ** 2) ** 0.5)
+        #ind = 7
         # ******************************************************
 
         [x, t, data, gx, shotLoc] = getData(
             "segy", os.path.join(dirName, fileInfo[ind][0])
         )
+        #x = np.linspace(0,237.5,96)
         if applyBPFilt:
             data = bpData(data, lf, hf, nq, order)
         data = normalizeTraces(data)
 
-        self.c = doPicks(x, t, data, shotLoc, 10, pickFile)
+        self.c = doPicks(x, t, data, shotLoc, 10, pickFile,convSPickFile)
         # tracePickingWindow(
         #     x,
         #     t,
